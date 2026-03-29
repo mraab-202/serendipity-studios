@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Serendipity Studios — Client Benchmark Comparison</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black:  #0a0a0a;
+  --white:  #f8f6f1;
+  --accent: #e8401c;
+  --mid:    #6b6b6b;
+  --rule:   #d8d4cc;
+  --lgray:  #f2f0eb;
+  --dgray:  #222222;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--white); color: var(--black); font-family: Arial, Helvetica, sans-serif; font-size: 14px; }
+
+/* ── NAV ───────────────────────────────────────────────────────── */
+nav {
+  background: var(--black); padding: 0 2rem;
+  display: flex; justify-content: space-between; align-items: center; height: 52px;
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-logo { color: #fff; font-weight: 700; font-size: 1rem; letter-spacing: .06em; text-decoration: none; transition: color 0.2s; }
+.nav-logo:hover { color: var(--accent); }
+.nav-sub  { color: var(--accent); font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; }
+.step-pills { display: flex; gap: .5rem; }
+.step-pill {
+  padding: .3rem .9rem; border-radius: 2px; font-size: .72rem;
+  font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  cursor: pointer; border: 1.5px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.4); transition: all .2s;
+}
+.step-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step-pill.done   { border-color: rgba(255,255,255,.4); color: rgba(255,255,255,.6); }
+
+/* ── SECTIONS ─────────────────────────────────────────────────── */
+.section { display: none; max-width: 980px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+.section.active { display: block; }
+
+/* ── SECTION HEADERS ──────────────────────────────────────────── */
+.eyebrow { font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: .6rem; }
+h1 { font-size: 2rem; font-weight: 700; color: var(--black); margin-bottom: .4rem; }
+h2 { font-size: 1.3rem; font-weight: 700; color: var(--black); margin-bottom: 1rem; }
+h3 { font-size: 1rem; font-weight: 700; color: var(--black); margin-bottom: .6rem; }
+.section-desc { font-size: .9rem; color: var(--mid); line-height: 1.6; margin-bottom: 2rem; max-width: 640px; }
+.rule { border: none; border-top: 1px solid var(--rule); margin: 1.5rem 0; }
+
+/* ── FORMS ─────────────────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.form-group { display: flex; flex-direction: column; gap: .4rem; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); }
+input[type=text], select {
+  border: 1px solid var(--rule); background: #fff; border-radius: 2px;
+  padding: .6rem .8rem; font-size: .9rem; color: var(--black);
+  outline: none; transition: border-color .2s;
+}
+input[type=text]:focus, select:focus { border-color: var(--accent); }
+
+/* ── PILLAR TABS ──────────────────────────────────────────────── */
+.pillar-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--rule); margin-bottom: 2rem; }
+.ptab {
+  padding: .7rem 1.4rem; font-size: .78rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  color: var(--mid); transition: color .2s, border-color .2s;
+}
+.ptab:hover { color: var(--black); }
+.ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.pillar-panel { display: none; }
+.pillar-panel.active { display: block; }
+
+.pillar-header {
+  background: var(--black); padding: 1rem 1.4rem; border-radius: 2px;
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+}
+.pillar-header h3 { color: #fff; margin: 0; font-size: 1rem; }
+.pillar-header .pnum { color: var(--accent); font-size: 1.5rem; font-weight: 700; }
+.pillar-score-display { margin-left: auto; text-align: right; }
+.pillar-score-display .big { color: #fff; font-size: 1.6rem; font-weight: 700; }
+.pillar-score-display .max { color: rgba(255,255,255,.4); font-size: .8rem; }
+
+/* ── CRITERION ROWS (DATA-DRIVEN) ────────────────────────────── */
+.criterion-row { padding: 1.4rem 0; border-bottom: 1px solid var(--rule); }
+.criterion-row:last-child { border-bottom: none; }
+
+.row-standard {
+  display: grid; grid-template-columns: 1fr 280px;
+  gap: 1.5rem; align-items: start;
+}
+
+.criterion-name { font-weight: 700; font-size: .9rem; color: var(--black); margin-bottom: .25rem; }
+.criterion-desc { font-size: .78rem; color: var(--mid); line-height: 1.45; }
+.criterion-hint {
+  margin-top: .6rem; font-size: .71rem; color: #777; line-height: 1.45;
+  padding: .4rem .7rem; background: var(--lgray); border-radius: 2px;
+  border-left: 2px solid var(--rule);
+}
+
+/* Input column */
+.input-col { display: flex; flex-direction: column; gap: .5rem; }
+.input-label { font-size: .7rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--mid); }
+
+input[type=number].data-input {
+  border: 1px solid var(--rule); background: #fff; border-radius: 2px;
+  padding: .6rem .8rem; font-size: .9rem; color: var(--black); width: 100%;
+  outline: none; transition: border-color .2s;
+}
+input[type=number].data-input:focus { border-color: var(--accent); }
+select.data-input {
+  border: 1px solid var(--rule); background: #fff; border-radius: 2px;
+  padding: .6rem .8rem; font-size: .84rem; color: var(--black); width: 100%;
+  outline: none; transition: border-color .2s; cursor: pointer;
+}
+select.data-input:focus { border-color: var(--accent); }
+
+.num-wrapper { display: flex; align-items: center; gap: .5rem; }
+.num-unit { font-size: .78rem; color: var(--mid); white-space: nowrap; flex-shrink: 0; }
+.num-wrapper input { flex: 1; }
+
+/* Auto-score badge */
+.auto-score-row { display: flex; align-items: center; gap: .45rem; margin-top: .3rem; }
+.auto-score-label { font-size: .72rem; color: var(--mid); }
+.score-badge {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .88rem; font-weight: 700; flex-shrink: 0; transition: background .25s;
+}
+.s0 { background: var(--rule); color: var(--mid); font-size: .72rem; }
+.s1 { background: #aa0000; color: #fff; }
+.s2 { background: var(--accent); color: #fff; }
+.s3 { background: #c9900a; color: #fff; }
+.s4 { background: #2a9; color: #fff; }
+.s5 { background: #197; color: #fff; }
+
+/* Checklist criterion rows */
+.row-checklist { }
+.checklist-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.checklist-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--mid); margin-top: .9rem; margin-bottom: .5rem;
+}
+.checklist-items { display: flex; flex-direction: column; gap: .35rem; }
+.check-item {
+  display: flex; align-items: flex-start; gap: .75rem;
+  padding: .65rem .85rem; border: 1.5px solid var(--rule); border-radius: 2px;
+  cursor: pointer; transition: border-color .15s, background .15s;
+  font-size: .82rem; color: var(--black); line-height: 1.4;
+}
+.check-item:hover { border-color: var(--accent); background: #fff8f6; }
+.check-item.checked { border-color: var(--accent); background: #fff3f0; }
+.check-item input[type=checkbox] {
+  margin-top: 2px; flex-shrink: 0;
+  accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────────── */
+.btn { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.8rem; border-radius: 2px; font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; border: none; transition: all .2s; }
+.btn-primary { background: var(--black); color: #fff; }
+.btn-primary:hover { background: var(--accent); }
+.btn-outline { background: transparent; color: var(--black); border: 1.5px solid var(--rule); }
+.btn-outline:hover { border-color: var(--black); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: #c73518; }
+.btn-row { display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
+
+/* ── SCORE SUMMARY BAR (step 2) ──────────────────────────────── */
+.score-summary {
+  display: grid; grid-template-columns: repeat(4,1fr) 1.2fr;
+  gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 2px;
+  margin-bottom: 2rem; overflow: hidden;
+}
+.score-cell { background: #fff; padding: 1rem; text-align: center; }
+.score-cell .label { font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); margin-bottom: .3rem; }
+.score-cell .value { font-size: 1.8rem; font-weight: 700; color: var(--black); }
+.score-cell .value .denom { font-size: .9rem; color: var(--mid); font-weight: 400; }
+.score-cell.total { background: var(--black); }
+.score-cell.total .label { color: rgba(255,255,255,.5); }
+.score-cell.total .value { color: #fff; }
+.score-cell.total .value .denom { color: rgba(255,255,255,.4); }
+
+/* ── DASHBOARD ───────────────────────────────────────────────── */
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.dash-card {
+  background: #fff; border: 1px solid var(--rule); border-radius: 2px;
+  padding: 1.5rem; position: relative;
+}
+.dash-card.full { grid-column: 1 / -1; }
+.dash-card.accent-top::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent);
+}
+.card-label { font-size: .65rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: .6rem; }
+.card-title { font-size: 1rem; font-weight: 700; color: var(--black); margin-bottom: 1rem; }
+
+/* Score gauge */
+.score-gauge { text-align: center; padding: 1rem 0; }
+.score-gauge .big-score { font-size: 4rem; font-weight: 700; color: var(--black); line-height: 1; }
+.score-gauge .denom { font-size: 1.2rem; color: var(--mid); font-weight: 400; }
+.score-gauge .rating { display: inline-block; margin-top: .8rem; padding: .35rem 1rem; border-radius: 2px; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.rating-5 { background: #0a0; color: #fff; }
+.rating-4 { background: #4a4; color: #fff; }
+.rating-3 { background: #fa0; color: #fff; }
+.rating-2 { background: var(--accent); color: #fff; }
+.rating-1 { background: #c00; color: #fff; }
+.score-gauge .peer-context { margin-top: 1rem; font-size: .82rem; color: var(--mid); line-height: 1.5; }
+
+/* Findings cards */
+.findings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.finding-card { padding: 1rem 1.2rem; border-radius: 2px; border-left: 4px solid; }
+.finding-card.strength { border-color: #090; background: #f0fff0; }
+.finding-card.gap      { border-color: var(--accent); background: #fff5f3; }
+.finding-card h4 { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .4rem; }
+.finding-card.strength h4 { color: #060; }
+.finding-card.gap      h4 { color: var(--accent); }
+.finding-card p  { font-size: .82rem; color: var(--mid); line-height: 1.5; }
+.finding-card strong { color: var(--black); }
+
+/* Positioning table */
+.pos-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.pos-table th { background: var(--black); color: #fff; padding: .5rem .7rem; text-align: left; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+.pos-table td { padding: .55rem .7rem; border-bottom: 1px solid var(--rule); }
+.pos-table tr.client-row td { background: #fff3f0; font-weight: 700; }
+.pos-table tr:last-child td { border-bottom: none; }
+.diff-pos { color: #090; font-weight: 700; }
+.diff-neg { color: var(--accent); font-weight: 700; }
+.diff-neu { color: var(--mid); }
+
+/* Peer match */
+.peer-match { display: flex; gap: 1rem; flex-wrap: wrap; }
+.peer-card {
+  flex: 1; min-width: 180px; border: 1px solid var(--rule); border-radius: 2px;
+  padding: 1rem; background: var(--lgray);
+}
+.peer-card .peer-name { font-weight: 700; font-size: .85rem; color: var(--black); margin-bottom: .2rem; }
+.peer-card .peer-center { font-size: .75rem; color: var(--mid); margin-bottom: .5rem; }
+.peer-card .peer-scores { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .5rem; }
+.peer-score-item { font-size: .72rem; color: var(--mid); }
+.peer-score-item strong { color: var(--black); }
+.similarity-badge { display: inline-block; padding: .2rem .6rem; background: var(--accent); color: #fff; font-size: .65rem; font-weight: 700; border-radius: 10px; margin-bottom: .6rem; }
+
+/* Data input info banner */
+.data-info-banner {
+  background: var(--black); color: #fff; border-radius: 2px;
+  padding: .8rem 1.2rem; margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: .8rem; font-size: .82rem;
+}
+.data-info-banner strong { color: var(--accent); }
+
+/* ── RESOURCES CHECKLIST ──────────────────────────────────────── */
+.resource-category { margin-bottom: 2rem; }
+.resource-cat-header {
+  display: flex; align-items: center; gap: .8rem;
+  padding: .9rem 1.2rem; background: var(--black); border-radius: 2px;
+  margin-bottom: .75rem;
+}
+.resource-cat-header .cat-icon { font-size: 1.3rem; line-height: 1; }
+.resource-cat-header h3 { color: #fff; margin: 0; font-size: .95rem; }
+.resource-cat-header .cat-meta { margin-left: auto; text-align: right; }
+.resource-cat-header .cat-pct { color: var(--accent); font-size: .72rem; font-weight: 700; }
+.resource-cat-header .cat-checked { color: rgba(255,255,255,.45); font-size: .7rem; margin-top: .1rem; }
+.resource-cat-desc { font-size: .8rem; color: var(--mid); margin-bottom: .75rem; line-height: 1.5; }
+.resource-items { display: flex; flex-direction: column; gap: .35rem; }
+.resource-item {
+  display: flex; align-items: flex-start; gap: .75rem;
+  padding: .65rem .85rem; border: 1.5px solid var(--rule); border-radius: 2px;
+  cursor: pointer; transition: border-color .15s, background .15s;
+  font-size: .82rem; color: var(--black); line-height: 1.4;
+}
+.resource-item:hover { border-color: var(--accent); background: #fff8f6; }
+.resource-item.checked { border-color: var(--accent); background: #fff3f0; }
+.resource-item input[type=checkbox] {
+  margin-top: 2px; flex-shrink: 0;
+  accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer;
+}
+.resource-item .top25-badge {
+  margin-left: auto; flex-shrink: 0; align-self: center;
+  font-size: .6rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: .15rem .5rem; border-radius: 2px;
+  background: var(--lgray); color: var(--mid); white-space: nowrap;
+}
+.resource-item.checked .top25-badge { background: #e6f4ea; color: #2a7a2a; }
+
+/* Resource summary on dashboard */
+.resource-progress-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem;
+  margin-bottom: 1.5rem;
+}
+.rp-label {
+  font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--mid); margin-bottom: .35rem;
+  display: flex; justify-content: space-between;
+}
+.rp-bar { height: 7px; background: var(--rule); border-radius: 4px; overflow: hidden; }
+.rp-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s; }
+.missing-tag {
+  display: inline-block; font-size: .72rem; padding: .25rem .65rem;
+  background: var(--lgray); border-radius: 2px; border-left: 3px solid var(--accent);
+  margin: .2rem;
+}
+
+/* Print ──────────────────────────────────────────────────────── */
+@media print {
+  nav, .step-pills, .btn-row, .pillar-tabs, .data-info-banner { display: none !important; }
+  .section { display: block !important; padding: 1rem; }
+  .dashboard-grid { grid-template-columns: 1fr 1fr; }
+  body { background: white; }
+}
+@media (max-width: 700px) {
+  .form-grid, .dashboard-grid, .findings-grid { grid-template-columns: 1fr; }
+  .score-summary { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .score-summary .score-cell.total { grid-column: 1 / -1; }
+  .row-standard { grid-template-columns: 1fr; }
+  .pillar-tabs { overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div>
+    <a href="serendipity-studios-website.html" class="nav-logo">SERENDIPITY STUDIOS</a>
+    <div class="nav-sub">Client Benchmark Comparison Tool</div>
+  </div>
+  <div class="step-pills">
+    <div class="step-pill active" onclick="goStep(1)" id="pill-1">1 · Client Info</div>
+    <div class="step-pill" onclick="goStep(2)" id="pill-2">2 · Enter Data</div>
+    <div class="step-pill" onclick="goStep(3)" id="pill-3">3 · Resources</div>
+    <div class="step-pill" onclick="goStep(4)" id="pill-4">4 · Dashboard</div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     STEP 1 — CLIENT INFO
+═══════════════════════════════════════════════════════════════ -->
+<div class="section active" id="step-1">
+  <div class="eyebrow">Step 1 of 3</div>
+  <h1>Client Center Profile</h1>
+  <p class="section-desc">Enter basic information about the entrepreneurship center you are assessing. This information will be used to find the most relevant peer comparisons.</p>
+
+  <div class="form-grid">
+    <div class="form-group full">
+      <label>University Name</label>
+      <input type="text" id="uni-name" placeholder="e.g., State University of New York at Albany"/>
+    </div>
+    <div class="form-group full">
+      <label>Center / Program Name</label>
+      <input type="text" id="center-name" placeholder="e.g., Entrepreneurship Center at Albany"/>
+    </div>
+    <div class="form-group">
+      <label>City, State</label>
+      <input type="text" id="city-state" placeholder="e.g., Albany, NY"/>
+    </div>
+    <div class="form-group">
+      <label>Engagement Type</label>
+      <select id="engagement-type">
+        <option value="">Select…</option>
+        <option>Assessment + Roadmap</option>
+        <option>Center Launch or Rebuild</option>
+        <option>Programming & Curriculum Build</option>
+        <option>Initial Consultation</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Public or Private</label>
+      <select id="pub-priv">
+        <option value="">Select…</option>
+        <option>Public</option>
+        <option>Private</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>University Type</label>
+      <select id="univ-type">
+        <option value="">Select…</option>
+        <option>R1 Research University</option>
+        <option>R2 Research University</option>
+        <option>Regional Teaching University</option>
+        <option>Liberal Arts College</option>
+        <option>Specialized / Professional</option>
+        <option>Community College</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Undergraduate Enrollment</label>
+      <select id="enrollment">
+        <option value="">Select…</option>
+        <option value="small">Under 5,000</option>
+        <option value="medium-small">5,000 – 15,000</option>
+        <option value="medium">15,000 – 30,000</option>
+        <option value="large">30,000 – 50,000</option>
+        <option value="very-large">Over 50,000</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Assessment Date</label>
+      <input type="text" id="assess-date" placeholder="e.g., April 2026"/>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <h2>Peer Comparison Filter</h2>
+  <p class="section-desc" style="margin-bottom:1.2rem">Choose how to filter the peer benchmark group. By default, all 25 programs are included.</p>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Compare Against</label>
+      <select id="compare-filter">
+        <option value="all">All Top 25 Programs</option>
+        <option value="public">Public Universities Only</option>
+        <option value="private">Private Universities Only</option>
+        <option value="r1">R1 Research Universities Only</option>
+        <option value="large">Large Universities (15K+ enrollment)</option>
+        <option value="small">Smaller Universities (under 15K)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goStep(2)">Continue to Data Entry →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     STEP 2 — ENTER CENTER DATA
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="step-2">
+  <div class="eyebrow">Step 2 of 3</div>
+  <h1>Enter Center Data</h1>
+  <p class="section-desc">Enter actual numbers and facts about the center. Scores are calculated automatically by comparing your inputs to benchmark thresholds derived from the Top 25 — no subjective guessing required.</p>
+
+  <div class="data-info-banner">
+    <span>💡</span>
+    <span>Each field shows a <strong>calculated score (1–5)</strong> that updates as you type. Enter <strong>0</strong> for any metric that is truly zero or absent.</span>
+  </div>
+
+  <!-- Running score summary -->
+  <div class="score-summary">
+    <div class="score-cell"><div class="label">Pillar 1 · Space</div><div class="value" id="p1-score">0<span class="denom">/40</span></div></div>
+    <div class="score-cell"><div class="label">Pillar 2 · Programs</div><div class="value" id="p2-score">0<span class="denom">/40</span></div></div>
+    <div class="score-cell"><div class="label">Pillar 3 · Staffing</div><div class="value" id="p3-score">0<span class="denom">/40</span></div></div>
+    <div class="score-cell"><div class="label">Pillar 4 · Outcomes</div><div class="value" id="p4-score">0<span class="denom">/40</span></div></div>
+    <div class="score-cell total"><div class="label">Total Score</div><div class="value" id="total-score">0<span class="denom">/160</span></div></div>
+  </div>
+
+  <!-- Pillar tabs -->
+  <div class="pillar-tabs">
+    <div class="ptab active" onclick="showPillar(1)" id="ptab-1">Pillar 1 · Physical Space</div>
+    <div class="ptab" onclick="showPillar(2)" id="ptab-2">Pillar 2 · Programming</div>
+    <div class="ptab" onclick="showPillar(3)" id="ptab-3">Pillar 3 · Staffing</div>
+    <div class="ptab" onclick="showPillar(4)" id="ptab-4">Pillar 4 · Outcomes</div>
+  </div>
+
+  <!-- Pillar 1 -->
+  <div class="pillar-panel active" id="panel-1">
+    <div class="pillar-header">
+      <div class="pnum">01</div>
+      <h3>Physical Space</h3>
+      <div class="pillar-score-display"><div class="big" id="p1-display">0</div><div class="max">/ 40</div></div>
+    </div>
+    <div id="criteria-p1"></div>
+  </div>
+  <!-- Pillar 2 -->
+  <div class="pillar-panel" id="panel-2">
+    <div class="pillar-header">
+      <div class="pnum">02</div>
+      <h3>Programming & Curriculum</h3>
+      <div class="pillar-score-display"><div class="big" id="p2-display">0</div><div class="max">/ 40</div></div>
+    </div>
+    <div id="criteria-p2"></div>
+  </div>
+  <!-- Pillar 3 -->
+  <div class="pillar-panel" id="panel-3">
+    <div class="pillar-header">
+      <div class="pnum">03</div>
+      <h3>Staffing & Operations</h3>
+      <div class="pillar-score-display"><div class="big" id="p3-display">0</div><div class="max">/ 40</div></div>
+    </div>
+    <div id="criteria-p3"></div>
+  </div>
+  <!-- Pillar 4 -->
+  <div class="pillar-panel" id="panel-4">
+    <div class="pillar-header">
+      <div class="pnum">04</div>
+      <h3>Student Outcomes & Impact</h3>
+      <div class="pillar-score-display"><div class="big" id="p4-display">0</div><div class="max">/ 40</div></div>
+    </div>
+    <div id="criteria-p4"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-outline" onclick="goStep(1)">← Back</button>
+    <button class="btn btn-accent" onclick="goStep(3)">Continue to Resources →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     STEP 3 — RESOURCES & PROGRAMS CHECKLIST
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="step-3">
+  <div class="eyebrow">Step 3 of 4</div>
+  <h1>Resources &amp; Programs Inventory</h1>
+  <p class="section-desc">Check every program, resource, or event your center currently offers. This inventory will appear in the dashboard alongside your benchmark scores — and highlight gaps relative to the Top 25.</p>
+  <div id="resources-container"></div>
+  <div class="btn-row">
+    <button class="btn btn-outline" onclick="goStep(2)">← Back</button>
+    <button class="btn btn-accent" onclick="generateDashboard()">Generate Dashboard →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     STEP 4 — DASHBOARD
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="step-4">
+  <div class="eyebrow">Step 4 of 4 · Comparison Report</div>
+  <h1 id="dash-title">Benchmark Report</h1>
+  <p class="section-desc" id="dash-subtitle"></p>
+
+  <div class="dashboard-grid">
+
+    <!-- Overall Score -->
+    <div class="dash-card accent-top">
+      <div class="card-label">Overall Assessment</div>
+      <div class="card-title">Total Score</div>
+      <div class="score-gauge">
+        <div class="big-score" id="d-total">—<span class="denom">/160</span></div>
+        <div><span class="rating" id="d-rating">—</span></div>
+        <div class="peer-context" id="d-peer-context"></div>
+      </div>
+    </div>
+
+    <!-- Radar Chart -->
+    <div class="dash-card accent-top">
+      <div class="card-label">Four-Pillar Profile</div>
+      <div class="card-title">Client vs. Peer Average</div>
+      <canvas id="radar-chart" height="220"></canvas>
+    </div>
+
+    <!-- Pillar Bar Comparison -->
+    <div class="dash-card full accent-top">
+      <div class="card-label">Pillar Breakdown</div>
+      <div class="card-title">Client vs. Peer Benchmark Averages</div>
+      <canvas id="bar-chart" height="110"></canvas>
+    </div>
+
+    <!-- Top Strengths -->
+    <div class="dash-card">
+      <div class="card-label">Top Scores vs. Peer Average</div>
+      <div class="card-title">Relative Strengths</div>
+      <div id="strengths-content"></div>
+    </div>
+
+    <!-- Top Gaps -->
+    <div class="dash-card">
+      <div class="card-label">Lowest Scores vs. Peer Average</div>
+      <div class="card-title">Priority Gaps</div>
+      <div id="gaps-content"></div>
+    </div>
+
+    <!-- Peer Positioning Table -->
+    <div class="dash-card full">
+      <div class="card-label">Peer Positioning</div>
+      <div class="card-title">How Your Client Compares to the Top 25</div>
+      <p style="font-size:.8rem;color:var(--mid);margin-bottom:1rem;">Client row is highlighted. Sorted by overall score.</p>
+      <div style="overflow-x:auto"><table class="pos-table" id="peer-table"></table></div>
+    </div>
+
+    <!-- Resources Inventory -->
+    <div class="dash-card full">
+      <div class="card-label">Programs &amp; Resources Inventory</div>
+      <div class="card-title">What Your Center Offers vs. Top 25 Benchmark</div>
+      <div id="resource-summary-content"><p style="color:var(--mid);font-size:.85rem">Complete the Resources checklist in Step 3 to see your inventory here.</p></div>
+    </div>
+
+    <!-- Most Similar Peers -->
+    <div class="dash-card full">
+      <div class="card-label">Peer Match</div>
+      <div class="card-title">Most Similar Programs in the Benchmark Group</div>
+      <p style="font-size:.8rem;color:var(--mid);margin-bottom:1rem;">Based on closest overall score and pillar profile to your client.</p>
+      <div class="peer-match" id="peer-match-content"></div>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-outline" onclick="goStep(3)">← Edit Resources</button>
+    <button class="btn btn-primary" onclick="window.print()">⎙ Print Report</button>
+    <button class="btn btn-outline" onclick="goStep(1)">New Assessment</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CRITERIA DATA — type, inputs, thresholds, benchmark hints
+// ══════════════════════════════════════════════════════════════
+const CD = {
+  1: [
+    {
+      name: "Location & Campus Visibility",
+      desc: "Where is the center located? High foot traffic and stumble-upon visibility signal institutional priority and drive organic student engagement.",
+      type: "dropdown",
+      label: "Campus location & visibility",
+      opts: [
+        "Basement, annex, or off-campus building — difficult to find",
+        "Upper floor with limited foot traffic or minimal wayfinding",
+        "Ground floor or accessible building, moderate foot traffic",
+        "High-traffic corridor or prominent campus building, clear signage",
+        "Prime central campus location — students encounter it organically"
+      ],
+      hint: "Top 25 avg: Most flagship centers occupy prime or dedicated campus buildings. The Garage, i-Lab, and Babson all hold signature real estate."
+    },
+    {
+      name: "Total Usable Square Footage",
+      desc: "Combined usable space for all center functions — co-working, events, offices, storage, and maker space.",
+      type: "number",
+      label: "Total square feet",
+      ph: "e.g. 8500",
+      unit: "sq ft",
+      thresh: [1000, 3000, 8000, 20000],
+      hint: "Top 25 range: 2,000–50,000+ sq ft. Median ≈ 10,000 sq ft. The Garage (Northwestern): ~20,000 sq ft. Babson: 65,000 sq ft."
+    },
+    {
+      name: "Dedicated Student Co-Working Area",
+      desc: "Open-access desks, pods, or lounge seating available to student entrepreneurs on a daily walk-in basis.",
+      type: "number",
+      label: "Dedicated co-working seats",
+      ph: "e.g. 40",
+      unit: "seats",
+      thresh: [1, 10, 30, 75],
+      hint: "Top 25 range: 8–150+ seats. Best-in-class offer 24/7 keycard access for founding teams."
+    },
+    {
+      name: "Event & Presentation Capacity",
+      desc: "Largest in-house event space capacity for pitch nights, workshops, and panels — ideally with built-in AV.",
+      type: "number",
+      label: "Max seated event capacity",
+      ph: "e.g. 80",
+      unit: "seats",
+      thresh: [1, 25, 75, 150],
+      hint: "Top 25 range: 25–500+ seats. Average ≈ 100 seats with built-in AV and livestream capability."
+    },
+    {
+      name: "Brand Identity & Atmosphere",
+      desc: "Does the physical space communicate entrepreneurship culture through visual identity, student work, and a distinct energy?",
+      type: "checklist",
+      label: "Select all that apply",
+      items: [
+        "Center has its own name and brand identity distinct from the university's generic branding",
+        "Custom signage, murals, or environmental graphics define the space visually",
+        "Student company logos, photos, or artifacts are prominently displayed",
+        "Active social media presence with a consistent visual brand for the center",
+        "The space has a 'startup' energy — it feels entrepreneurial, not like a generic classroom"
+      ],
+      hint: "Top-tier centers (The Garage, IDEA, i-Lab, Wolff) operate as recognized brands with deliberate culture-building. Atmosphere drives word-of-mouth."
+    },
+    {
+      name: "Equipment & Tools Available",
+      desc: "Maker equipment, computers, collaboration tools, and media equipment accessible to student entrepreneurs.",
+      type: "checklist",
+      label: "Select all equipment categories available",
+      items: [
+        "Computers or workstations available for student use (not just staff)",
+        "Collaboration tools: large whiteboards, writable walls, or visual thinking surfaces",
+        "3D printer, laser cutter, or other maker/rapid-prototyping equipment",
+        "Video, podcast, or content creation studio or kit",
+        "Professional demo equipment: large displays, projectors, recording capability"
+      ],
+      hint: "Top 25 median: 3 of 5 categories. Elite centers (MIT, Stanford, CMU) offer full maker studios. Equipment drives team retention."
+    },
+    {
+      name: "Hours of Operation & Access",
+      desc: "How available is the space beyond standard business hours? 24/7 access signals serious commitment to founders.",
+      type: "dropdown",
+      label: "Space access model",
+      opts: [
+        "Appointment-only or very limited hours (under 20 hrs/week)",
+        "Standard business hours only, Monday–Friday 9am–5pm",
+        "Extended weekday hours only, closing by 8pm — no weekend access",
+        "Consistent evening and Saturday hours; limited 24/7 access for select teams",
+        "24/7 keycard access for active founders; center staffed most daytime hours"
+      ],
+      hint: "Best-in-class: 24/7 keycard access (The Garage, Babson, i-Lab). Top 25 avg: extended evening weekday hours + Saturday."
+    },
+    {
+      name: "Private & Staff Space",
+      desc: "Dedicated offices for staff plus private meeting rooms for advising, investor calls, and confidential conversations.",
+      type: "number",
+      label: "Total private rooms (staff offices + meeting rooms combined)",
+      ph: "e.g. 5",
+      unit: "rooms",
+      thresh: [1, 2, 4, 7],
+      hint: "Top 25 avg: 3–6 private rooms. Best-in-class have 8+ with dedicated advising suites and board rooms."
+    }
+  ],
+  2: [
+    {
+      name: "Annual Programming Cadence",
+      desc: "Total number of distinct programs, events, and workshops offered per academic year. Consistency matters more than volume.",
+      type: "number",
+      label: "Total distinct events/programs per year",
+      ph: "e.g. 45",
+      unit: "events/yr",
+      thresh: [10, 25, 50, 100],
+      hint: "Top 25 range: 15–200+ per year. Median ≈ 50. Stanford STVP and MIT Martin Trust run 100+ distinct programs annually."
+    },
+    {
+      name: "Signature Program(s)",
+      desc: "1–2 defining programs that carry the center's brand identity and that students aspire to join — the anchor of the center's reputation.",
+      type: "dropdown",
+      label: "Describe the center's signature program status",
+      opts: [
+        "No signature program — programming is entirely ad hoc or reactive",
+        "One named program exists but is small-scale or under 2 years old",
+        "One established signature program with clear brand and consistent demand",
+        "Two strong signature programs, each with competitive selection or waitlist",
+        "Multiple named programs that define the center's regional or national reputation"
+      ],
+      hint: "Examples: The Garage Residency, Desai Accelerator, i-Lab Summer Venture. Signature programs are brands within the brand — they create aspiration."
+    },
+    {
+      name: "Skill-Building Workshop Series",
+      desc: "Regular, practical workshops on legal basics, finance, product development, pitching, and customer discovery.",
+      type: "number",
+      label: "Skill-building workshops per academic year",
+      ph: "e.g. 18",
+      unit: "workshops/yr",
+      thresh: [5, 12, 25, 50],
+      hint: "Top 25 avg: ~20 workshops/yr. Best-in-class programs run weekly skill-building content aligned to a curriculum framework."
+    },
+    {
+      name: "Speaker & Mentor Engagement",
+      desc: "Consistent access to founders, operators, and investors through panels, speaker series, and office hours — not one-off events.",
+      type: "number",
+      label: "Speaker or mentor events per academic year",
+      ph: "e.g. 24",
+      unit: "events/yr",
+      thresh: [5, 12, 25, 50],
+      hint: "Top 25 avg: ~25 speaker events/yr. Best programs run a weekly speaker series and structured mentor-matching beyond a one-time panel."
+    },
+    {
+      name: "Pitch Events & Demo Days",
+      desc: "Structured, well-run public opportunities for student ventures to present to audiences — from small feedback sessions to large demo days.",
+      type: "number",
+      label: "Pitch competitions or demo days per year",
+      ph: "e.g. 4",
+      unit: "events/yr",
+      thresh: [1, 3, 6, 10],
+      hint: "Top 25 avg: 4–6 per year. Best-in-class have semester-end demo days, internal pitch competitions, and external competition participation."
+    },
+    {
+      name: "Accelerator / Incubator Track",
+      desc: "Dedicated cohort-based program with structured mentorship, accountability, resources, and a defined timeline.",
+      type: "dropdown",
+      label: "Describe the center's accelerator or incubator",
+      opts: [
+        "No accelerator or incubator — no cohort-based program exists",
+        "Informal or loosely structured mentorship program only",
+        "Light accelerator: under 8 weeks, fewer than 5 teams, limited resources",
+        "Structured accelerator: 8–16 weeks, 5–15 teams, some funding or prizes",
+        "Full accelerator: 16+ weeks, 15+ teams, stipends, workspace, investor demo day"
+      ],
+      hint: "Top 25: ~90% have a formal accelerator. Best-in-class (Desai, The Garage, CREATE-X, Wolff) offer stipends, co-working, and investor access."
+    },
+    {
+      name: "First-Year & On-Ramp Programming",
+      desc: "Programming specifically designed to introduce freshmen and newcomers before they self-select — building the funnel intentionally.",
+      type: "dropdown",
+      label: "First-year and on-ramp programming",
+      opts: [
+        "No programming targeting new or first-year students",
+        "Occasional intro events open to all — not specifically targeted at newcomers",
+        "Annual orientation event or intro workshop designed for first-years",
+        "Dedicated first-year program or course with a structured multi-session journey",
+        "Multi-touchpoint first-year experience with mentorship that carries into sophomore year"
+      ],
+      hint: "Gap for most centers: fewer than 30% of the Top 25 have formal first-year programming. It is among the highest-leverage investments available."
+    },
+    {
+      name: "Interdisciplinary & Cross-Campus Reach",
+      desc: "The number of colleges or schools that actively participate in programming — moving beyond just the business school.",
+      type: "number",
+      label: "Schools/colleges formally engaged (co-sponsors, liaisons, or joint programs)",
+      ph: "e.g. 4",
+      unit: "schools",
+      thresh: [2, 4, 6, 9],
+      hint: "Best practice: active reach into engineering, design, nursing, public policy, and arts. Top 25 avg: 5 schools. Most underperform on this criterion."
+    }
+  ],
+  3: [
+    {
+      name: "Full-Time Staff Size & Role Clarity",
+      desc: "Number of FTE staff dedicated specifically to the entrepreneurship center — not shared positions or percent-time appointments.",
+      type: "number",
+      label: "Dedicated FTE staff",
+      ph: "e.g. 5",
+      unit: "FTE",
+      thresh: [2, 4, 7, 13],
+      hint: "Top 25 range: 2–25+ FTE. Median ≈ 6 FTE. Wolff Center: 8 FTE. Babson: 20+. Most struggling centers are at 1–2 FTE with blurry roles."
+    },
+    {
+      name: "Annual Operating Budget",
+      desc: "Total annual budget for all operations, programs, staffing, and events — inclusive of endowment draw and external funding.",
+      type: "dropdown",
+      label: "Annual operating budget",
+      opts: [
+        "Under $100,000",
+        "$100,000 – $300,000",
+        "$300,000 – $750,000",
+        "$750,000 – $2,000,000",
+        "Over $2,000,000"
+      ],
+      hint: "Top 25 range: $250K–$10M+. Median ≈ $1M. Babson, Harvard, Stanford operate at $5M+. Budget reflects institutional commitment."
+    },
+    {
+      name: "Reporting Structure & Executive Support",
+      desc: "Who does the director report to? Centers that report to senior leadership get faster decisions, more resources, and cross-campus authority.",
+      type: "dropdown",
+      label: "Director reports directly to",
+      opts: [
+        "Department chair or faculty committee — low institutional priority",
+        "Associate Dean with limited budget authority",
+        "Dean of a college — solid but siloed within one school",
+        "Provost, VP of Innovation, or equivalent senior university leader",
+        "President or Provost with Board-level champion and dedicated endowment"
+      ],
+      hint: "Reporting structure predicts resource trajectory. Centers reporting to Provosts outperform peers on budget growth within 5 years."
+    },
+    {
+      name: "Student Staff & Ambassador Pipeline",
+      desc: "Students embedded in the center's operations — as paid staff, fellows, EIRs, or ambassadors — not just participants but builders.",
+      type: "number",
+      label: "Paid or credit-bearing student staff/fellows",
+      ph: "e.g. 8",
+      unit: "students",
+      thresh: [1, 3, 6, 12],
+      hint: "Top 25 avg: 6–10 student staff. Best programs (The Garage, MIT) make students co-designers of the culture and programming."
+    },
+    {
+      name: "Mentor & Advisor Network Management",
+      desc: "Active roster of external mentors and advisors formally enrolled, matched to student teams, and engaged regularly — not just a list.",
+      type: "number",
+      label: "Active mentors/advisors in formal roster",
+      ph: "e.g. 35",
+      unit: "mentors",
+      thresh: [5, 15, 40, 100],
+      hint: "Top 25 range: 15–200+ mentors. Wolff Center: 200+ CEO mentors. Key distinction: active and matched vs. simply listed on a website."
+    },
+    {
+      name: "Strategic Planning & Goal-Setting",
+      desc: "Does the center operate with a documented multi-year strategic plan, tracked KPIs, and annual reporting to leadership?",
+      type: "dropdown",
+      label: "Strategic planning maturity",
+      opts: [
+        "No formal plan — priorities are set informally by the director",
+        "Informal goals exist but are not documented, tracked, or shared",
+        "Annual goals are documented and shared with direct supervisor",
+        "Multi-year strategic plan with KPIs, reviewed and updated annually",
+        "Board-reviewed strategic plan with annual public impact report and stakeholder presentation"
+      ],
+      hint: "Fewer than 40% of entrepreneurship centers have a formal multi-year plan. It is among the strongest predictors of budget growth and donor confidence."
+    },
+    {
+      name: "Data & Assessment Infrastructure",
+      desc: "CRM, intake forms, outcome tracking systems, and quantitative impact reporting — the backbone of institutional credibility.",
+      type: "checklist",
+      label: "Select all that are currently in place",
+      items: [
+        "CRM or participant database to track who attends programs (e.g., Salesforce, HubSpot, custom)",
+        "Intake/registration forms capturing consistent data across all programs",
+        "Post-program outcome tracking with follow-up surveys at 6 and 12 months",
+        "Annual impact report published and presented to university leadership",
+        "Real-time reporting dashboard or summary accessible to staff and director"
+      ],
+      hint: "Most centers track headcount but not outcomes. Outcome tracking is the rarest and most valuable capability — it is what unlocks major donor and corporate funding."
+    },
+    {
+      name: "Funding Model & Sustainability",
+      desc: "Proportion of budget from non-university sources — endowment, corporate partners, alumni, and grants. Diversification = resilience.",
+      type: "dropdown",
+      label: "% of budget from university general fund",
+      opts: [
+        "~100% university line item — fully dependent on annual budget approval",
+        "75–99% university — small amount from grants or one corporate sponsor",
+        "50–75% university — meaningful external revenue but majority-dependent",
+        "25–50% university — substantial endowment, corporate, or philanthropy income",
+        "Under 25% university — primarily endowed, self-sustaining, or revenue-generating"
+      ],
+      hint: "Centers dependent on 100% university funding are vulnerable to budget cuts and enrollment dips. Named endowments are the gold standard for long-term stability."
+    }
+  ],
+  4: [
+    {
+      name: "Active Venture Tracking",
+      desc: "Number of student ventures currently active, receiving support from the center, and tracked in some system.",
+      type: "number",
+      label: "Active student ventures currently tracked",
+      ph: "e.g. 35",
+      unit: "ventures",
+      thresh: [5, 15, 40, 100],
+      hint: "Top 25 range: 10–500+ ventures. Median ≈ 40. Best programs know every active team by name and stage."
+    },
+    {
+      name: "Capital & Funding Outcomes",
+      desc: "Total external capital raised by student ventures in the most recent academic or fiscal year — grants, prizes, angels, and VC.",
+      type: "dropdown",
+      label: "Student venture capital raised (most recent year)",
+      opts: [
+        "Not tracked or $0 documented",
+        "Under $50,000 (prize money and small grants only)",
+        "$50,000 – $250,000",
+        "$250,000 – $1,000,000",
+        "Over $1,000,000"
+      ],
+      hint: "Top 25 avg: $500K–$5M/year. MIT and Harvard student ventures routinely raise $10M+ annually. Even tracking is a differentiator at many schools."
+    },
+    {
+      name: "Alumni Entrepreneurship Tracking",
+      desc: "Systematic follow-up with alumni to track who started companies, raised funding, or built ventures after graduation.",
+      type: "dropdown",
+      label: "Alumni tracking methodology",
+      opts: [
+        "Not tracked — no systematic follow-up after graduation",
+        "Anecdotal — staff know of alumni companies informally through LinkedIn",
+        "Partial tracking — some alumni surveyed, limited formal data",
+        "Active database — 5-year post-graduation follow-up with meaningful response rates",
+        "Comprehensive longitudinal study — published outcomes, known % of grads who start companies"
+      ],
+      hint: "Alumni outcomes are the ultimate measure of impact — and among the hardest to track. Fewer than 20% of centers do this systematically."
+    },
+    {
+      name: "Impact Assessment & Student Surveys",
+      desc: "NPS surveys, longitudinal outcome studies, and quantitative data that directly drives program decisions — not just compliance reporting.",
+      type: "dropdown",
+      label: "Assessment and measurement maturity",
+      opts: [
+        "No formal measurement or student surveys",
+        "Informal feedback collected occasionally after events",
+        "Annual survey deployed, results reviewed internally by staff",
+        "Annual NPS + outcome survey shared with university leadership with trend data",
+        "Longitudinal study published publicly; results directly drive program changes annually"
+      ],
+      hint: "Data-driven programs gain more institutional resources. The key differentiator is whether survey results actually change what the center does."
+    },
+    {
+      name: "External Recognition & Rankings",
+      desc: "National rankings and awards received — Princeton Review, Entrepreneur Magazine, Forbes, GCEC, NFTE, and equivalent.",
+      type: "number",
+      label: "National rankings or major awards in last 3 years",
+      ph: "e.g. 3",
+      unit: "recognitions",
+      thresh: [1, 2, 4, 7],
+      hint: "Princeton Review top-25, Entrepreneur Magazine rankings, GCEC Leader in Entrepreneurship awards. Most centers have 0–2. Pursue rankings intentionally."
+    },
+    {
+      name: "Campus Entrepreneurship Ecosystem",
+      desc: "Thriving student-led activity beyond the center: clubs, angel funds, case competitions, and maker communities.",
+      type: "number",
+      label: "Active student entrepreneurship clubs or organizations on campus",
+      ph: "e.g. 6",
+      unit: "organizations",
+      thresh: [2, 4, 7, 13],
+      hint: "Top 25 avg: 5–8 student orgs. Elite ecosystems (MIT, Stanford) have 20+ including student VC funds and domain-specific groups."
+    },
+    {
+      name: "Community & Regional Ecosystem Ties",
+      desc: "Formal partnerships with local accelerators, VCs, chambers of commerce, and startup organizations that create pathways for students.",
+      type: "number",
+      label: "Formal community or regional partnerships",
+      ph: "e.g. 8",
+      unit: "partners",
+      thresh: [2, 5, 10, 20],
+      hint: "Centers in strong startup markets (Austin, Boston, Chicago) have natural advantages. Formalizing ties creates durable pipelines and co-investment."
+    },
+    {
+      name: "Success Stories & Media Presence",
+      desc: "Documented alumni case studies and proactive press coverage of student venture success that drives reputation and donor engagement.",
+      type: "number",
+      label: "Published success stories or major press mentions in last 2 years",
+      ph: "e.g. 12",
+      unit: "stories",
+      thresh: [2, 5, 12, 30],
+      hint: "Success stories drive student recruitment, corporate partnerships, and donor confidence. Best centers publish 20+ case studies annually and pitch media proactively."
+    }
+  ]
+};
+
+// Peer benchmark data — estimated pillar scores (out of 40) based on research
+const PEERS = [
+  { rank:1,  name:"Univ. of Houston",         center:"Wolff Center for Entrepreneurship",  pub:"Public",  type:"R1", size:"large",        p1:28, p2:34, p3:28, p4:36 },
+  { rank:2,  name:"Rice University",           center:"Liu Idea Lab (Lilie)",               pub:"Private", type:"R1", size:"small",        p1:26, p2:34, p3:28, p4:36 },
+  { rank:3,  name:"UT Austin",                 center:"Harkey Institute",                   pub:"Public",  type:"R1", size:"large",        p1:26, p2:38, p3:32, p4:38 },
+  { rank:4,  name:"Babson College",            center:"Arthur M. Blank School",             pub:"Private", type:"R1", size:"small",        p1:38, p2:38, p3:38, p4:34 },
+  { rank:5,  name:"Northwestern University",   center:"The Garage",                         pub:"Private", type:"R1", size:"small",        p1:32, p2:38, p3:32, p4:34, isNW:true },
+  { rank:6,  name:"Stanford University",       center:"Stanford Tech Ventures Program",     pub:"Private", type:"R1", size:"small",        p1:28, p2:40, p3:38, p4:40 },
+  { rank:7,  name:"MIT",                       center:"Martin Trust Center",                pub:"Private", type:"R1", size:"small",        p1:32, p2:40, p3:34, p4:40 },
+  { rank:8,  name:"Harvard University",        center:"i-Lab + Rock Center",                pub:"Private", type:"R1", size:"small",        p1:38, p2:40, p3:38, p4:40 },
+  { rank:9,  name:"Univ. of Michigan",         center:"Zell Lurie + Desai Accelerator",     pub:"Public",  type:"R1", size:"large",        p1:26, p2:34, p3:34, p4:32 },
+  { rank:10, name:"UC Berkeley",               center:"SkyDeck + LAUNCH",                   pub:"Public",  type:"R1", size:"large",        p1:30, p2:38, p3:32, p4:38 },
+  { rank:11, name:"Carnegie Mellon",           center:"Swartz Center",                      pub:"Private", type:"R1", size:"small",        p1:34, p2:32, p3:28, p4:32 },
+  { rank:12, name:"Cornell University",        center:"eLab + Entrepreneurship at Cornell", pub:"Private", type:"R1", size:"medium-small", p1:26, p2:34, p3:32, p4:34 },
+  { rank:13, name:"Univ. of Pennsylvania",     center:"Penn Wharton Entrepreneurship",      pub:"Private", type:"R1", size:"medium-small", p1:30, p2:32, p3:32, p4:34 },
+  { rank:14, name:"Georgia Tech",              center:"CREATE-X + VentureLab",              pub:"Public",  type:"R1", size:"medium-small", p1:26, p2:38, p3:32, p4:34 },
+  { rank:15, name:"Duke University",           center:"Duke Innovation & Entrepreneurship", pub:"Private", type:"R1", size:"small",        p1:24, p2:32, p3:26, p4:28 },
+  { rank:16, name:"Indiana University",        center:"Johnson Center for Entrepreneurship",pub:"Public",  type:"R1", size:"large",        p1:24, p2:28, p3:26, p4:26 },
+  { rank:17, name:"Univ. of Maryland",         center:"Dingman Center",                     pub:"Public",  type:"R1", size:"large",        p1:24, p2:28, p3:26, p4:26 },
+  { rank:18, name:"Purdue University",         center:"Burton D. Morgan Center + Foundry",  pub:"Public",  type:"R1", size:"large",        p1:26, p2:28, p3:26, p4:26 },
+  { rank:19, name:"Northeastern University",   center:"IDEA Venture Accelerator",           pub:"Private", type:"R1", size:"medium",       p1:26, p2:32, p3:26, p4:26 },
+  { rank:20, name:"Yale University",           center:"Tsai CITY + YEI",                    pub:"Private", type:"R1", size:"small",        p1:32, p2:32, p3:26, p4:28 },
+  { rank:21, name:"Princeton University",      center:"Keller Center",                      pub:"Private", type:"R1", size:"small",        p1:24, p2:26, p3:20, p4:26 },
+  { rank:22, name:"Univ. of Notre Dame",       center:"IDEA Center",                        pub:"Private", type:"R1", size:"small",        p1:38, p2:32, p3:32, p4:26 },
+  { rank:23, name:"Syracuse University",       center:"Blackstone LaunchPad",               pub:"Private", type:"R1", size:"medium",       p1:18, p2:26, p3:20, p4:20 },
+  { rank:24, name:"Univ. of Colorado Boulder", center:"Leeds Entrepreneurship + NVC",       pub:"Public",  type:"R1", size:"large",        p1:24, p2:26, p3:26, p4:26 },
+  { rank:25, name:"Univ. of Illinois",         center:"iVenture + Illinois Ventures",       pub:"Public",  type:"R1", size:"large",        p1:26, p2:26, p3:26, p4:26 },
+];
+
+// ══════════════════════════════════════════════════════════════
+// RESOURCES & PROGRAMS DATA
+// top25: true = present at majority of Top 25 programs
+// ══════════════════════════════════════════════════════════════
+const RESOURCES = [
+  {
+    id: 'accelerators',
+    category: 'Accelerators & Incubators',
+    icon: '🚀',
+    desc: 'Structured cohort programs that guide ventures through a defined timeline with mentorship, resources, and accountability.',
+    top25pct: '92% of Top 25 have a formal accelerator',
+    items: [
+      { id: 'acc1', label: 'Summer accelerator — stipend or award-based, intensive cohort format', top25: true },
+      { id: 'acc2', label: 'Academic-year accelerator — semester-length cohort with structured curriculum', top25: true },
+      { id: 'acc3', label: 'Pre-accelerator or idea-stage program for very early concepts', top25: true },
+      { id: 'acc4', label: 'Social impact or mission-driven incubator track', top25: false },
+      { id: 'acc5', label: 'Hardware, deep tech, or maker-focused incubator track', top25: false },
+      { id: 'acc6', label: 'Corporate-sponsored innovation challenge or accelerator track', top25: false },
+    ]
+  },
+  {
+    id: 'mentors',
+    category: 'Office Hours & Mentors',
+    icon: '🧭',
+    desc: 'Structured access to experienced founders, operators, investors, and domain experts on an ongoing and matchable basis.',
+    top25pct: '100% of Top 25 offer some form of mentorship',
+    items: [
+      { id: 'ment1', label: 'Weekly open office hours with center staff or director', top25: true },
+      { id: 'ment2', label: 'Structured 1:1 mentor matching with accountability check-ins', top25: true },
+      { id: 'ment3', label: 'Entrepreneur-in-Residence (EIR) or Founder-in-Residence program', top25: true },
+      { id: 'ment4', label: 'CEO or executive mentor network — formal roster of 50+ active mentors', top25: true },
+      { id: 'ment5', label: 'Investor or VC access program — recurring office hours with funders', top25: false },
+      { id: 'ment6', label: 'Legal, IP, or financial advisory clinic — pro bono or subsidized', top25: false },
+      { id: 'ment7', label: 'Faculty advisor matching program for active student ventures', top25: false },
+    ]
+  },
+  {
+    id: 'competitions',
+    category: 'Competitions & Grants',
+    icon: '🏆',
+    desc: 'Funding, prizes, and recognition that motivate students to formalize their ventures and develop competitive pitch skills.',
+    top25pct: '96% of Top 25 run at least one pitch competition',
+    items: [
+      { id: 'comp1', label: 'Annual flagship pitch competition or Demo Day with cash prizes', top25: true },
+      { id: 'comp2', label: 'Seed grant or micro-funding program ($500–$5,000 per team)', top25: true },
+      { id: 'comp3', label: 'Internal investment fund or venture award ($5,000–$25,000+ per team)', top25: false },
+      { id: 'comp4', label: 'Social impact, sustainability, or community challenge competition', top25: false },
+      { id: 'comp5', label: 'Idea-stage or first-concept low-barrier pitch event', top25: true },
+      { id: 'comp6', label: 'National competition coaching and application support program', top25: false },
+      { id: 'comp7', label: 'Corporate-sponsored challenge, prize track, or innovation award', top25: false },
+    ]
+  },
+  {
+    id: 'events',
+    category: 'Events & Workshops',
+    icon: '📅',
+    desc: 'Regular programming that builds skills, community, and culture across the full entrepreneurship ecosystem.',
+    top25pct: '100% of Top 25 run a speaker or workshop series',
+    items: [
+      { id: 'evt1', label: 'Weekly or bi-weekly speaker series featuring founders and operators', top25: true },
+      { id: 'evt2', label: 'Annual Startup Showcase or large public-facing Demo Day event', top25: true },
+      { id: 'evt3', label: 'Customer discovery or Lean Startup workshop series', top25: true },
+      { id: 'evt4', label: 'Legal basics for startups or IP fundamentals workshop', top25: true },
+      { id: 'evt5', label: 'Pitch coaching and presentation skills intensive or bootcamp', top25: true },
+      { id: 'evt6', label: 'Hackathon, venture challenge, or 48-hour startup sprint', top25: false },
+      { id: 'evt7', label: 'Entrepreneurship orientation event for new or first-year students', top25: false },
+      { id: 'evt8', label: 'Alumni founder networking, panel, or reunion event', top25: false },
+      { id: 'evt9', label: 'Design thinking or human-centered innovation workshop series', top25: false },
+      { id: 'evt10', label: 'Industry vertical networking events (tech, health, fintech, social impact, etc.)', top25: false },
+    ]
+  },
+  {
+    id: 'special',
+    category: 'Special & Signature Programs',
+    icon: '⭐',
+    desc: 'Distinctive high-impact offerings that define elite centers and separate top-tier programs from the field.',
+    top25pct: 'Present at 60–80% of Top 25 programs',
+    items: [
+      { id: 'spec1', label: 'Interdisciplinary or cross-school co-curricular collaboration program', top25: true },
+      { id: 'spec2', label: 'Global entrepreneurship immersion trip or international cohort', top25: false },
+      { id: 'spec3', label: 'Student-run angel fund, venture investment club, or pitch-to-invest program', top25: false },
+      { id: 'spec4', label: 'Maker space or rapid prototyping lab with open student access', top25: true },
+      { id: 'spec5', label: 'First-year or freshman entrepreneurship introduction experience', top25: false },
+      { id: 'spec6', label: 'Summer co-working residency or subsidized housing for founding teams', top25: false },
+      { id: 'spec7', label: 'Corporate or industry partner program with embedded mentors or sponsored projects', top25: true },
+    ]
+  }
+];
+
+// Track which resource items are checked
+const resourceChecks = {};
+RESOURCES.forEach(cat => cat.items.forEach(item => { resourceChecks[item.id] = false; }));
+
+// ── Raw data storage (null = not yet entered)
+const rawData = {};
+[1,2,3,4].forEach(p => {
+  rawData[p] = {};
+  CD[p].forEach((c, i) => { rawData[p][i] = null; });
+});
+
+let radarChart = null;
+let barChart   = null;
+
+// ══════════════════════════════════════════════════════════════
+// SCORING FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+
+// Number: thresholds [t1,t2,t3,t4] → val<t1=1, t1≤val<t2=2, ...≥t4=5
+function scoreFromThresholds(val, thresh) {
+  const v = parseFloat(val);
+  if (isNaN(v)) return 0;
+  for (let i = 0; i < thresh.length; i++) {
+    if (v < thresh[i]) return i + 1;
+  }
+  return 5;
+}
+
+// Dropdown: option index 0–4 → score 1–5
+function scoreFromDropdown(val) {
+  if (val === null || val === '' || val === undefined) return 0;
+  const idx = parseInt(val);
+  return isNaN(idx) ? 0 : idx + 1;
+}
+
+// Checklist: count of checked items 0–5 → score 1–5
+function scoreFromChecklist(count) {
+  if (count === null) return 0;
+  const n = parseInt(count) || 0;
+  return Math.min(5, n + 1); // 0→1, 1→2, 2→3, 3→4, 4+→5
+}
+
+function getScore(p, i) {
+  const c = CD[p][i];
+  const val = rawData[p][i];
+  if (c.type === 'number')    return scoreFromThresholds(val, c.thresh);
+  if (c.type === 'dropdown')  return scoreFromDropdown(val);
+  if (c.type === 'checklist') return scoreFromChecklist(val);
+  return 0;
+}
+
+function pillarTotal(p) {
+  return CD[p].reduce((sum, _, i) => sum + getScore(p, i), 0);
+}
+
+// ══════════════════════════════════════════════════════════════
+// BUILD CRITERION UI
+// ══════════════════════════════════════════════════════════════
+
+function buildCriteriaUI() {
+  [1,2,3,4].forEach(p => {
+    const container = document.getElementById(`criteria-p${p}`);
+    container.innerHTML = '';
+    CD[p].forEach((c, i) => {
+      let row;
+      if (c.type === 'number')    row = buildNumberRow(p, i, c);
+      else if (c.type === 'dropdown') row = buildDropdownRow(p, i, c);
+      else                        row = buildChecklistRow(p, i, c);
+      container.appendChild(row);
+    });
+  });
+}
+
+function badgeHTML(p, i) {
+  return `<div class="score-badge s0" id="badge-p${p}-c${i}">—</div>`;
+}
+
+function buildNumberRow(p, i, c) {
+  const div = document.createElement('div');
+  div.className = 'criterion-row row-standard';
+  div.innerHTML = `
+    <div>
+      <div class="criterion-name">${c.name}</div>
+      <div class="criterion-desc">${c.desc}</div>
+      <div class="criterion-hint">📊 ${c.hint}</div>
+    </div>
+    <div class="input-col">
+      <label class="input-label">${c.label}</label>
+      <div class="num-wrapper">
+        <input type="number" class="data-input" min="0" placeholder="${c.ph || ''}"
+          oninput="updateInput(${p},${i},this.value)">
+        ${c.unit ? `<span class="num-unit">${c.unit}</span>` : ''}
+      </div>
+      <div class="auto-score-row">
+        <span class="auto-score-label">Score:</span>
+        ${badgeHTML(p,i)}
+        <span class="auto-score-label">/5</span>
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildDropdownRow(p, i, c) {
+  const options = c.opts.map((opt, j) =>
+    `<option value="${j}">${opt}</option>`
+  ).join('');
+  const div = document.createElement('div');
+  div.className = 'criterion-row row-standard';
+  div.innerHTML = `
+    <div>
+      <div class="criterion-name">${c.name}</div>
+      <div class="criterion-desc">${c.desc}</div>
+      <div class="criterion-hint">📊 ${c.hint}</div>
+    </div>
+    <div class="input-col">
+      <label class="input-label">${c.label}</label>
+      <select class="data-input" onchange="updateInput(${p},${i},this.value)">
+        <option value="">Select…</option>
+        ${options}
+      </select>
+      <div class="auto-score-row">
+        <span class="auto-score-label">Score:</span>
+        ${badgeHTML(p,i)}
+        <span class="auto-score-label">/5</span>
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildChecklistRow(p, i, c) {
+  const items = c.items.map((item, j) => `
+    <label class="check-item" id="ci-p${p}-c${i}-${j}">
+      <input type="checkbox" class="cb-p${p}-c${i}"
+        onchange="toggleCheck(${p},${i},this)">
+      <span>${item}</span>
+    </label>`).join('');
+
+  const div = document.createElement('div');
+  div.className = 'criterion-row row-checklist';
+  div.innerHTML = `
+    <div class="checklist-header">
+      <div>
+        <div class="criterion-name">${c.name}</div>
+        <div class="criterion-desc">${c.desc}</div>
+      </div>
+      <div class="auto-score-row" style="flex-shrink:0;margin-left:1rem;align-items:center">
+        <span class="auto-score-label">Score:</span>
+        ${badgeHTML(p,i)}
+        <span class="auto-score-label">/5</span>
+      </div>
+    </div>
+    <div class="criterion-hint" style="margin-top:.5rem">📊 ${c.hint}</div>
+    <div class="checklist-label">${c.label}</div>
+    <div class="checklist-items">${items}</div>`;
+  return div;
+}
+
+// ══════════════════════════════════════════════════════════════
+// INPUT HANDLERS
+// ══════════════════════════════════════════════════════════════
+
+function updateInput(p, i, val) {
+  rawData[p][i] = val;
+  updateBadge(p, i);
+  updateTotals();
+}
+
+function toggleCheck(p, i, el) {
+  const boxes = document.querySelectorAll(`.cb-p${p}-c${i}`);
+  rawData[p][i] = Array.from(boxes).filter(b => b.checked).length;
+  el.closest('.check-item').classList.toggle('checked', el.checked);
+  updateBadge(p, i);
+  updateTotals();
+}
+
+function updateBadge(p, i) {
+  const el = document.getElementById(`badge-p${p}-c${i}`);
+  if (!el) return;
+  const s = getScore(p, i);
+  el.className = `score-badge s${s}`;
+  el.textContent = s || '—';
+}
+
+function updateTotals() {
+  [1,2,3,4].forEach(p => {
+    const t = pillarTotal(p);
+    document.getElementById(`p${p}-score`).innerHTML = `${t}<span class="denom">/40</span>`;
+    document.getElementById(`p${p}-display`).textContent = t;
+  });
+  const total = [1,2,3,4].reduce((a,p) => a + pillarTotal(p), 0);
+  document.getElementById('total-score').innerHTML = `${total}<span class="denom">/160</span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function goStep(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`step-${i}`).classList.toggle('active', i === n);
+    const pill = document.getElementById(`pill-${i}`);
+    pill.classList.toggle('active', i === n);
+    pill.classList.toggle('done', i < n);
+  });
+  window.scrollTo(0, 0);
+}
+
+function showPillar(p) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`panel-${i}`).classList.toggle('active', i === p);
+    document.getElementById(`ptab-${i}`).classList.toggle('active', i === p);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// RESOURCES UI
+// ══════════════════════════════════════════════════════════════
+function buildResourcesUI() {
+  const container = document.getElementById('resources-container');
+  if (!container) return;
+  container.innerHTML = '';
+  RESOURCES.forEach(cat => {
+    const sec = document.createElement('div');
+    sec.className = 'resource-category';
+    const itemsHTML = cat.items.map(item => `
+      <label class="resource-item" id="ri-${item.id}">
+        <input type="checkbox" id="rcheck-${item.id}"
+          onchange="toggleResource('${item.id}', this)">
+        <span>${item.label}</span>
+        ${item.top25 ? '<span class="top25-badge">Top 25</span>' : ''}
+      </label>`).join('');
+    sec.innerHTML = `
+      <div class="resource-cat-header">
+        <span class="cat-icon">${cat.icon}</span>
+        <h3>${cat.category}</h3>
+        <div class="cat-meta">
+          <div class="cat-pct">${cat.top25pct}</div>
+          <div class="cat-checked" id="cat-count-${cat.id}">0 / ${cat.items.length} checked</div>
+        </div>
+      </div>
+      <div class="resource-cat-desc">${cat.desc}</div>
+      <div class="resource-items">${itemsHTML}</div>`;
+    container.appendChild(sec);
+  });
+}
+
+function toggleResource(id, el) {
+  resourceChecks[id] = el.checked;
+  const label = el.closest('.resource-item');
+  label.classList.toggle('checked', el.checked);
+  const cat = RESOURCES.find(c => c.items.some(i => i.id === id));
+  if (cat) {
+    const count = cat.items.filter(i => resourceChecks[i.id]).length;
+    const countEl = document.getElementById(`cat-count-${cat.id}`);
+    if (countEl) countEl.textContent = `${count} / ${cat.items.length} checked`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD GENERATION
+// ══════════════════════════════════════════════════════════════
+function generateDashboard() {
+  goStep(4);
+
+  const uniName    = document.getElementById('uni-name').value || 'Client University';
+  const centerName = document.getElementById('center-name').value || 'Entrepreneurship Center';
+  const filter     = document.getElementById('compare-filter').value;
+
+  document.getElementById('dash-title').textContent = `${centerName} · Benchmark Report`;
+  document.getElementById('dash-subtitle').textContent =
+    `${uniName}  ·  Compared against Top 25 University Entrepreneurship Centers  ·  Serendipity Studios  ·  ${document.getElementById('assess-date').value || '2026'}`;
+
+  const clientP     = [1,2,3,4].map(p => pillarTotal(p));
+  const clientTotal = clientP.reduce((a,b) => a+b, 0);
+
+  // Filter peers
+  let peers = PEERS.filter(p => {
+    if (filter === 'public')  return p.pub === 'Public';
+    if (filter === 'private') return p.pub === 'Private';
+    if (filter === 'r1')      return p.type === 'R1';
+    if (filter === 'large')   return ['large','very-large'].includes(p.size);
+    if (filter === 'small')   return ['small','medium-small'].includes(p.size);
+    return true;
+  });
+  if (peers.length === 0) peers = PEERS;
+
+  const avg = p => Math.round(peers.reduce((a,s) => a + s[`p${p}`], 0) / peers.length);
+  const peerAvg      = [1,2,3,4].map(p => avg(p));
+  const peerAvgTotal = peerAvg.reduce((a,b) => a+b, 0);
+
+  // ── Overall score ──
+  document.getElementById('d-total').innerHTML = `${clientTotal}<span class="denom">/160</span>`;
+
+  const ratingBands = [
+    [130, 'Best-in-Class', 'rating-5'],
+    [100, 'Strong Program', 'rating-4'],
+    [70,  'Developing Center', 'rating-3'],
+    [40,  'Early Stage', 'rating-2'],
+    [0,   'Needs Major Intervention', 'rating-1'],
+  ];
+  const [, rLabel, rClass] = ratingBands.find(([min]) => clientTotal >= min);
+  const rEl = document.getElementById('d-rating');
+  rEl.textContent = rLabel;
+  rEl.className = `rating ${rClass}`;
+
+  const rank = peers.filter(p => (p.p1+p.p2+p.p3+p.p4) > clientTotal).length + 1;
+  document.getElementById('d-peer-context').innerHTML =
+    `<strong>Peer Avg: ${peerAvgTotal}/160</strong><br/>
+    Client ranks <strong>#${rank}</strong> of ${peers.length} in filtered peer group.<br/>
+    ${clientTotal > peerAvgTotal
+      ? `<span style="color:#090">▲ ${clientTotal-peerAvgTotal} pts above peer average</span>`
+      : `<span style="color:#c00">▼ ${peerAvgTotal-clientTotal} pts below peer average</span>`}`;
+
+  // ── Radar chart ──
+  const radarData = {
+    labels: ['Physical Space', 'Programming', 'Staffing & Ops', 'Student Outcomes'],
+    datasets: [
+      {
+        label: centerName,
+        data: clientP.map(v => Math.round(v/8*10)/10),
+        backgroundColor: 'rgba(232,64,28,0.15)',
+        borderColor: '#e8401c', borderWidth: 2.5, pointRadius: 4,
+        pointBackgroundColor: '#e8401c',
+      },
+      {
+        label: 'Peer Avg',
+        data: peerAvg.map(v => Math.round(v/8*10)/10),
+        backgroundColor: 'rgba(10,10,10,0.07)',
+        borderColor: '#888', borderWidth: 1.5, borderDash: [5,4],
+        pointRadius: 3, pointBackgroundColor: '#888',
+      },
+    ],
+  };
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(document.getElementById('radar-chart'), {
+    type: 'radar',
+    data: radarData,
+    options: {
+      scales: { r: { min: 0, max: 5, ticks: { stepSize: 1, font: { size: 10 } }, pointLabels: { font: { size: 11, weight: '700' } } } },
+      plugins: { legend: { labels: { font: { size: 11 } } } },
+    }
+  });
+
+  // ── Bar chart ──
+  const barData = {
+    labels: ['Physical Space', 'Programming & Curriculum', 'Staffing & Operations', 'Student Outcomes'],
+    datasets: [
+      { label: centerName, data: clientP, backgroundColor: '#e8401c', borderRadius: 2 },
+      { label: 'Peer Avg', data: peerAvg, backgroundColor: '#d8d4cc', borderRadius: 2 },
+    ],
+  };
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('bar-chart'), {
+    type: 'bar',
+    data: barData,
+    options: {
+      indexAxis: 'y',
+      scales: {
+        x: { min: 0, max: 40, grid: { color: '#f0ede6' }, ticks: { font: { size: 11 } } },
+        y: { ticks: { font: { size: 11, weight: '700' } } }
+      },
+      plugins: { legend: { labels: { font: { size: 11 } } } },
+    }
+  });
+
+  // ── Strengths & Gaps ──
+  const allCriteria = [];
+  const pillarNames = { 1:'Physical Space', 2:'Programming', 3:'Staffing', 4:'Outcomes' };
+
+  [1,2,3,4].forEach(p => {
+    CD[p].forEach((c, i) => {
+      const clientScore = getScore(p, i);
+      const peerCritAvg = peers.reduce((a,s) => a + s[`p${p}`], 0) / peers.length / 8;
+      allCriteria.push({ pillar:p, idx:i, name:c.name, score:clientScore, peerAvg:peerCritAvg, diff: clientScore - peerCritAvg });
+    });
+  });
+
+  const scored     = allCriteria.filter(c => c.score > 0);
+  const strengths  = [...scored].sort((a,b) => b.diff - a.diff).slice(0, 4);
+  const gaps       = [...scored].sort((a,b) => a.diff - b.diff).slice(0, 4);
+
+  document.getElementById('strengths-content').innerHTML = strengths.length
+    ? strengths.map(c => `
+        <div class="finding-card strength" style="margin-bottom:.7rem">
+          <h4>Pillar ${c.pillar} · ${pillarNames[c.pillar]}</h4>
+          <p><strong>${c.name}</strong> — Score: <strong>${c.score}/5</strong>
+          ${c.diff > 0 ? `<span style="color:#090"> (+${c.diff.toFixed(1)} vs peer avg)</span>` : ''}</p>
+        </div>`).join('')
+    : '<p style="color:var(--mid);font-size:.85rem">Enter data in Step 2 to see strengths.</p>';
+
+  document.getElementById('gaps-content').innerHTML = gaps.length
+    ? gaps.map(c => `
+        <div class="finding-card gap" style="margin-bottom:.7rem">
+          <h4>Pillar ${c.pillar} · ${pillarNames[c.pillar]}</h4>
+          <p><strong>${c.name}</strong> — Score: <strong>${c.score}/5</strong>
+          <span style="color:var(--accent)"> (${c.diff.toFixed(1)} vs peer avg)</span></p>
+        </div>`).join('')
+    : '<p style="color:var(--mid);font-size:.85rem">Enter data in Step 2 to see gaps.</p>';
+
+  // ── Peer positioning table ──
+  const clientRow = { name: centerName, center: uniName, p1:clientP[0], p2:clientP[1], p3:clientP[2], p4:clientP[3], isClient:true };
+  const tableData = [...peers.map(p => ({ ...p, total: p.p1+p.p2+p.p3+p.p4 })), { ...clientRow, total:clientTotal }]
+    .sort((a,b) => b.total - a.total);
+
+  const tbl = document.getElementById('peer-table');
+  tbl.innerHTML = `
+    <tr>
+      <th>#</th><th>Center</th><th>P1 · Space</th><th>P2 · Programs</th><th>P3 · Staffing</th><th>P4 · Outcomes</th><th>Total</th><th>vs Client</th>
+    </tr>
+    ${tableData.map((r, idx) => {
+      const diff = r.total - clientTotal;
+      const diffStr = r.isClient ? '—' :
+        diff === 0 ? '<span class="diff-neu">Even</span>' :
+        diff > 0 ? `<span class="diff-pos">+${diff}</span>` :
+        `<span class="diff-neg">${diff}</span>`;
+      return `<tr class="${r.isClient ? 'client-row' : ''}">
+        <td>${idx+1}</td>
+        <td><strong>${r.isClient ? '★ ' + r.name : r.name}</strong><br/><span style="font-size:.75rem;color:var(--mid)">${r.center || ''}</span></td>
+        <td style="text-align:center">${r.p1}</td>
+        <td style="text-align:center">${r.p2}</td>
+        <td style="text-align:center">${r.p3}</td>
+        <td style="text-align:center">${r.p4}</td>
+        <td style="text-align:center;font-weight:700">${r.total}</td>
+        <td style="text-align:center">${diffStr}</td>
+      </tr>`;
+    }).join('')}`;
+
+  // ── Resource inventory summary ──
+  const totalItems   = RESOURCES.reduce((a, c) => a + c.items.length, 0);
+  const totalChecked = Object.values(resourceChecks).filter(Boolean).length;
+  const missingTop25 = RESOURCES.flatMap(c => c.items.filter(i => i.top25 && !resourceChecks[i.id]));
+
+  document.getElementById('resource-summary-content').innerHTML = `
+    <div style="margin-bottom:1.2rem">
+      <span style="font-size:2rem;font-weight:700;color:var(--black)">${totalChecked}</span>
+      <span style="font-size:1rem;color:var(--mid);font-weight:400"> / ${totalItems} programs &amp; resources currently offered</span>
+    </div>
+    <div class="resource-progress-grid" style="margin-bottom:1.5rem">
+      ${RESOURCES.map(cat => {
+        const checked = cat.items.filter(i => resourceChecks[i.id]).length;
+        const pct = Math.round(checked / cat.items.length * 100);
+        return `
+          <div class="resource-progress-item">
+            <div class="rp-label">
+              <span>${cat.icon} ${cat.category}</span>
+              <span>${checked} / ${cat.items.length}</span>
+            </div>
+            <div class="rp-bar"><div class="rp-fill" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join('')}
+    </div>
+    ${missingTop25.length > 0 ? `
+    <div>
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);margin-bottom:.7rem">
+        Top 25 Standard Programs Not Yet Checked (${missingTop25.length})
+      </div>
+      <div style="display:flex;flex-wrap:wrap;">
+        ${missingTop25.map(i => `<span class="missing-tag">${i.label}</span>`).join('')}
+      </div>
+    </div>` : `<div style="padding:.8rem 1.2rem;background:#f0fff4;border-left:4px solid #0a0;border-radius:2px;font-size:.85rem;color:#060"><strong>All Top 25 standard programs are checked!</strong> Your center offers the full benchmark suite.</div>`}
+  `;
+
+  // ── Most similar peers ──
+  const similarPeers = peers
+    .map(p => {
+      const totalDiff  = Math.abs((p.p1+p.p2+p.p3+p.p4) - clientTotal);
+      const pillarDiff = [0,1,2,3].reduce((a,i) => a + Math.abs([p.p1,p.p2,p.p3,p.p4][i] - clientP[i]), 0);
+      return { ...p, similarity: totalDiff + pillarDiff * 0.5 };
+    })
+    .sort((a,b) => a.similarity - b.similarity)
+    .slice(0, 3);
+
+  document.getElementById('peer-match-content').innerHTML = similarPeers.map(p => {
+    const pTotal = p.p1+p.p2+p.p3+p.p4;
+    const matchScore = Math.max(0, Math.round(100 - p.similarity * 2));
+    return `
+      <div class="peer-card">
+        <div class="similarity-badge">${matchScore}% match</div>
+        <div class="peer-name">${p.name}</div>
+        <div class="peer-center">${p.center}</div>
+        <div class="peer-scores">
+          <div class="peer-score-item">Space: <strong>${p.p1}/40</strong></div>
+          <div class="peer-score-item">Programs: <strong>${p.p2}/40</strong></div>
+          <div class="peer-score-item">Staffing: <strong>${p.p3}/40</strong></div>
+          <div class="peer-score-item">Outcomes: <strong>${p.p4}/40</strong></div>
+          <div class="peer-score-item" style="grid-column:1/-1;margin-top:.3rem">Total: <strong>${pTotal}/160</strong></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+buildCriteriaUI();
+buildResourcesUI();
+</script>
+</body>
+</html>
