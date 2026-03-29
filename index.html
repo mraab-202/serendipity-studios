@@ -342,6 +342,34 @@
       font-size: 1.1rem; line-height: 1.8; color: var(--mid);
     }
 
+    /* BELIEFS */
+    .beliefs {
+      border-top: 1px solid var(--rule);
+      padding: 7rem 3rem;
+      max-width: 860px; margin: 0 auto;
+    }
+    .beliefs .section-label { margin-bottom: 2rem; display: block; }
+    .beliefs-headline {
+      font-family: 'Instrument Serif', serif; font-style: italic;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      line-height: 1.3; color: var(--black); margin-bottom: 3rem;
+    }
+    .beliefs-list {
+      list-style: none; padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 2rem;
+    }
+    .beliefs-list li {
+      display: grid; grid-template-columns: 2.5rem 1fr;
+      gap: 1rem; align-items: start;
+    }
+    .beliefs-list .belief-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; color: var(--accent); line-height: 1.4;
+    }
+    .beliefs-list .belief-text {
+      font-size: 1.05rem; line-height: 1.8; color: var(--mid);
+    }
+
     /* SERVICES */
     .services { border-top: 1px solid var(--rule); padding: 6rem 3rem; }
     .services-header {
@@ -661,6 +689,25 @@
     <p class="section-label reveal">My Philosophy</p>
     <h2 class="philosophy-headline reveal">Most universities know they should be supporting student entrepreneurs.<br><em>Few have figured out how.</em></h2>
     <p class="philosophy-body reveal">I've spent over a decade building a program that actually works — and now I help others do the same.</p>
+  </section>
+
+  <!-- BELIEFS -->
+  <section class="beliefs">
+    <p class="section-label reveal">I Believe</p>
+    <ul class="beliefs-list">
+      <li class="reveal">
+        <span class="belief-num">1</span>
+        <span class="belief-text">Now, more than ever, it's imperative that universities have resources for aspiring student entrepreneurs.</span>
+      </li>
+      <li class="reveal">
+        <span class="belief-num">2</span>
+        <span class="belief-text">Entrepreneurship centers act as a flywheel for university ecosystems — attracting ambitious prospective students, enriching the student experience, and allowing accomplished alumni to engage with the ecosystem in a meaningful way.</span>
+      </li>
+      <li class="reveal">
+        <span class="belief-num">3</span>
+        <span class="belief-text">No matter the available resources or funding, any university can stand up or improve their entrepreneurship offerings. The most important parts of serving students is the strategy and people, not just competitions with large prize pools.</span>
+      </li>
+    </ul>
   </section>
 
   <!-- SERVICES -->
