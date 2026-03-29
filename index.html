@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Serendipity Studios — Entrepreneurship Consulting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f8f6f1;
+      --accent: #e8401c;
+      --mid: #6b6b6b;
+      --rule: #d8d4cc;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* CURSOR */
+    .cursor {
+      width: 10px; height: 10px;
+      background: var(--accent); border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, background 0.2s;
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--black); border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.4rem 3rem;
+      background: rgba(248,246,241,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    nav.scrolled { border-color: var(--rule); box-shadow: 0 2px 20px rgba(0,0,0,0.04); }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; letter-spacing: 0.08em;
+      color: var(--black); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-logo:hover { color: var(--accent); }
+
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--mid); text-decoration: none;
+      position: relative; transition: color 0.2s;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute;
+      bottom: -3px; left: 0; right: 0; height: 1px;
+      background: var(--accent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+    .nav-links a:hover { color: var(--black); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    .nav-cta {
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--white) !important; background: var(--black);
+      padding: 0.6rem 1.4rem; border-radius: 2px; text-decoration: none;
+      transition: background 0.2s, transform 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--accent) !important; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding-top: 80px; position: relative; overflow: hidden;
+      text-align: center;
+    }
+
+    .hero-left {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 5rem 3rem;
+      position: relative; z-index: 2;
+      max-width: 900px;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.72rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 1.8rem;
+      opacity: 0; animation: fadeUp 0.7s ease forwards 0.2s;
+    }
+
+    .hero-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4.5rem, 8vw, 8rem);
+      line-height: 0.92; letter-spacing: 0.01em; color: var(--black);
+    }
+    .hero-headline .line {
+      display: block; overflow: hidden;
+    }
+    .hero-headline .line-inner {
+      display: block;
+      opacity: 0; transform: translateY(110%);
+      animation: slideUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    .hero-headline .line:nth-child(1) .line-inner { animation-delay: 0.3s; }
+    .hero-headline .line:nth-child(2) .line-inner { animation-delay: 0.45s; }
+    .hero-headline .line:nth-child(3) .line-inner { animation-delay: 0.6s; }
+    .hero-headline em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent); }
+
+    .hero-sub {
+      margin-top: 2.5rem; font-size: 1.05rem; line-height: 1.7;
+      color: var(--mid); max-width: 540px;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.85s;
+    }
+
+    .hero-actions {
+      margin-top: 3rem; display: flex; gap: 1.2rem; align-items: center;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 1.05s;
+    }
+
+    .btn-primary {
+      background: var(--black); color: var(--white);
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.9rem 2rem; border-radius: 2px; text-decoration: none;
+      position: relative; overflow: hidden; transition: color 0.3s;
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--accent);
+      transform: translateX(-101%);
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn-primary:hover::before { transform: translateX(0); }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    .btn-text {
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--mid); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s;
+    }
+    .btn-text:hover { color: var(--black); }
+    .btn-text .arrow { transition: transform 0.2s; display: inline-block; }
+    .btn-text:hover .arrow { transform: translateX(5px); }
+
+    .hero-right { display: none; }
+
+    .hero-bg-text {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Bebas Neue', sans-serif; font-size: 32rem;
+      color: rgba(0,0,0,0.03); pointer-events: none; white-space: nowrap;
+      animation: floatBg 8s ease-in-out infinite;
+    }
+    @keyframes floatBg {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -52%) scale(1.02); }
+    }
+
+    .hero-stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0;
+      position: relative; z-index: 1;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.95s;
+    }
+    .hero-stat {
+      padding: 2.5rem 2rem; border: 1px solid var(--rule);
+      margin: -1px 0 0 -1px;
+      position: relative; overflow: hidden;
+      transition: background 0.3s;
+    }
+    .hero-stat::after {
+      content: ''; position: absolute;
+      bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .hero-stat:hover { background: rgba(232,64,28,0.04); }
+    .hero-stat:hover::after { transform: scaleX(1); }
+
+    .hero-stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.8rem; line-height: 1; color: var(--black);
+    }
+    .hero-stat-num span { color: var(--accent); }
+    .hero-stat-label {
+      margin-top: 0.5rem; font-size: 0.75rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--mid); line-height: 1.4;
+    }
+    .hero-cred-icon {
+      font-size: 1.4rem; margin-bottom: 0.8rem; display: block;
+    }
+    .hero-cred-title {
+      font-size: 0.85rem; font-weight: 500; color: var(--black);
+      line-height: 1.3; margin-bottom: 0.4rem;
+    }
+    .hero-cred-sub {
+      font-size: 0.75rem; letter-spacing: 0.06em;
+      color: var(--mid); line-height: 1.5;
+    }
+
+    /* MARQUEE */
+    .marquee-wrap {
+      overflow: hidden; padding: 1rem 0;
+      background: var(--black);
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+    .marquee-track {
+      display: flex; gap: 3rem;
+      animation: marquee 25s linear infinite; width: max-content;
+    }
+    .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem; letter-spacing: 0.15em;
+      color: var(--white); opacity: 0.6; white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .marquee-item:hover { opacity: 1; }
+    .marquee-item.accent { color: var(--accent); opacity: 1; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* REVEAL */
+    .reveal {
+      opacity: 1; transform: translateY(0);
+      transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    body.js-loaded .reveal { opacity: 0; transform: translateY(28px); }
+    body.js-loaded .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ABOUT */
+    .about {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; min-height: 80vh;
+    }
+    .about-photo {
+      border-right: 1px solid var(--rule);
+      overflow: hidden; position: relative;
+    }
+    .about-photo img {
+      width: 100%; height: 100%; object-fit: cover; object-position: top center;
+      display: block;
+    }
+    .about-left {
+      padding: 6rem 4rem 6rem 3rem;
+      border-right: 1px solid var(--rule);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .section-label {
+      font-size: 0.7rem; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 2rem;
+    }
+    .about-headline {
+      font-family: 'Instrument Serif', serif; font-style: italic;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      line-height: 1.25; color: var(--black); margin-bottom: 2rem;
+    }
+    .about-body { font-size: 1rem; line-height: 1.8; color: var(--mid); max-width: 480px; }
+    .about-body p + p { margin-top: 1.2rem; }
+    .about-body strong { color: var(--black); font-weight: 500; }
+    .about-body a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent); transition: color 0.2s; }
+    .about-body a:hover { color: var(--accent); }
+
+    .about-note {
+      margin-top: 2.5rem; padding-top: 2rem;
+      border-top: 1px solid var(--rule);
+    }
+    .about-note blockquote {
+      font-family: 'Instrument Serif', serif; font-style: italic;
+      font-size: 1.1rem; line-height: 1.7; color: var(--black);
+      margin: 0 0 1rem 0;
+    }
+    .about-note cite {
+      font-size: 0.75rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); font-style: normal;
+    }
+
+    .about-right {
+      padding: 6rem 3rem 6rem 4rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .credential {
+      padding: 2.2rem 0; border-bottom: 1px solid var(--rule);
+      display: flex; align-items: flex-start; gap: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+    .credential:first-child { border-top: 1px solid var(--rule); }
+    .credential:hover { transform: translateX(6px); }
+    .credential-num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem;
+      color: var(--accent); min-width: 2.5rem; line-height: 1; padding-top: 2px;
+    }
+    .credential-text strong {
+      display: block; font-size: 0.9rem; font-weight: 500;
+      color: var(--black); margin-bottom: 0.3rem;
+    }
+    .credential-text span { font-size: 0.85rem; color: var(--mid); line-height: 1.5; }
+
+    /* PHILOSOPHY */
+    .philosophy {
+      border-top: 1px solid var(--rule);
+      padding: 7rem 3rem; text-align: center;
+      max-width: 860px; margin: 0 auto;
+    }
+    .philosophy .section-label { margin-bottom: 2rem; display: block; }
+    .philosophy-headline {
+      font-family: 'Instrument Serif', serif; font-style: italic;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      line-height: 1.3; color: var(--black); margin-bottom: 1.5rem;
+    }
+    .philosophy-headline em { color: var(--accent); }
+    .philosophy-body {
+      font-size: 1.1rem; line-height: 1.8; color: var(--mid);
+    }
+
+    /* SERVICES */
+    .services { border-top: 1px solid var(--rule); padding: 6rem 3rem; }
+    .services-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 4rem; padding-bottom: 2rem;
+      border-bottom: 1px solid var(--rule);
+    }
+    .services-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 5vw, 5rem); line-height: 0.95; color: var(--black);
+    }
+    .services-intro { max-width: 320px; font-size: 0.9rem; line-height: 1.7; color: var(--mid); }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .service-card {
+      padding: 3rem 2.5rem; border: 1px solid var(--rule);
+      margin: -1px 0 0 -1px; position: relative; overflow: hidden;
+      transition: background 0.4s;
+    }
+    .service-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-card:hover { background: #f0ede6; }
+    .service-tag {
+      font-size: 0.68rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 1.5rem;
+    }
+    .service-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; letter-spacing: 0.02em;
+      color: var(--black); line-height: 1.1; margin-bottom: 1.2rem;
+      transition: letter-spacing 0.3s;
+    }
+    .service-card:hover .service-name { letter-spacing: 0.05em; }
+    .service-desc { font-size: 0.88rem; line-height: 1.75; color: var(--mid); margin-bottom: 2rem; }
+    .service-deliverable {
+      font-size: 0.75rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--black); padding-top: 1.5rem; border-top: 1px solid var(--rule);
+    }
+    .service-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; color: var(--black); margin-top: 0.3rem;
+      transition: color 0.3s;
+    }
+    .service-card:hover .service-price { color: var(--accent); }
+
+    /* STATS BAND */
+    .stats-band {
+      background: var(--black);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .stat-item {
+      padding: 4rem 3rem; text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      transition: background 0.3s;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: rgba(232,64,28,0.1); }
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem; line-height: 1; color: var(--white);
+    }
+    .stat-number span { color: var(--accent); }
+    .stat-label {
+      margin-top: 0.6rem; font-size: 0.72rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(248,246,241,0.4); line-height: 1.5;
+    }
+
+    /* PROCESS */
+    .process { border-top: 1px solid var(--rule); display: grid; grid-template-columns: 1fr 2fr; }
+    .process-left {
+      padding: 6rem 3rem; border-right: 1px solid var(--rule);
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .process-left::before {
+      content: '→'; position: absolute;
+      bottom: -3rem; right: -1rem;
+      font-family: 'Bebas Neue', sans-serif; font-size: 14rem;
+      color: rgba(0,0,0,0.04); pointer-events: none;
+      animation: floatBg 7s ease-in-out infinite;
+    }
+    .process-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 4vw, 4.5rem); line-height: 0.95; color: var(--black);
+    }
+    .process-right {
+      padding: 6rem 3rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .step {
+      display: grid; grid-template-columns: 80px 1fr;
+      gap: 2rem; padding: 2.5rem 0; border-bottom: 1px solid var(--rule);
+      align-items: start; transition: transform 0.3s ease;
+    }
+    .step:first-child { border-top: 1px solid var(--rule); }
+    .step:hover { transform: translateX(8px); }
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem;
+      color: rgba(0,0,0,0.08); line-height: 1; transition: color 0.3s;
+    }
+    .step:hover .step-num { color: var(--accent); }
+    .step-content strong {
+      display: block; font-size: 1rem; font-weight: 500;
+      color: var(--black); margin-bottom: 0.4rem; margin-top: 0.4rem;
+    }
+    .step-content p { font-size: 0.88rem; line-height: 1.7; color: var(--mid); }
+
+    /* CTA */
+    .cta-band {
+      background: var(--black); padding: 7rem 3rem;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: 3rem;
+      position: relative; overflow: hidden;
+    }
+    .cta-band::before {
+      content: ''; position: absolute;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(232,64,28,0.12) 0%, transparent 70%);
+      top: -200px; right: -100px;
+      animation: pulse 4s ease-in-out infinite; pointer-events: none;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.7; }
+    }
+    .cta-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 5vw, 5.5rem); line-height: 0.92; color: var(--white);
+      position: relative; z-index: 1;
+    }
+    .cta-headline em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent); }
+    .cta-right {
+      display: flex; flex-direction: column; gap: 1.5rem; align-items: flex-start;
+      position: relative; z-index: 1;
+    }
+    .cta-body { font-size: 1rem; line-height: 1.75; color: rgba(248,246,241,0.6); max-width: 400px; }
+    .btn-white {
+      background: var(--white); color: var(--black);
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.9rem 2rem; border-radius: 2px; text-decoration: none;
+      position: relative; overflow: hidden; transition: color 0.3s;
+    }
+    .btn-white::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--accent); transform: translateX(-101%);
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn-white:hover { color: var(--white); }
+    .btn-white:hover::before { transform: translateX(0); }
+    .btn-white span { position: relative; z-index: 1; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--rule); padding: 2.5rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem; letter-spacing: 0.08em; color: var(--black);
+      transition: color 0.2s;
+    }
+    .footer-logo:hover { color: var(--accent); }
+    .footer-copy { font-size: 0.75rem; color: var(--mid); }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a {
+      font-size: 0.75rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--mid); text-decoration: none; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--black); }
+
+    /* KEYFRAMES */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(110%); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      body { cursor: auto; }
+      .cursor, .cursor-ring { display: none; }
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { min-height: auto; }
+      .hero-left { padding: 4rem 1.5rem; }
+      .hero-bg-text { display: none; }
+      .about { grid-template-columns: 1fr; }
+      .about-photo { display: none; }
+      .about-left { padding: 4rem 1.5rem 2rem; border-right: none; border-bottom: 1px solid var(--rule); }
+      .about-right { padding: 2rem 1.5rem 4rem; }
+      .services { padding: 4rem 1.5rem; }
+      .services-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .services-grid { grid-template-columns: 1fr; }
+      .stats-band { grid-template-columns: 1fr 1fr; }
+      .process { grid-template-columns: 1fr; }
+      .process-left { padding: 4rem 1.5rem 2rem; border-right: none; border-bottom: 1px solid var(--rule); }
+      .process-right { padding: 2rem 1.5rem 4rem; }
+      .cta-band { grid-template-columns: 1fr; padding: 4rem 1.5rem; }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a href="#" class="nav-logo">Serendipity Studios</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="Serendipity-Studios-Client-Benchmark-Comparison.html">Benchmarking</a></li>
+      <li><a href="#contact" class="nav-cta">Let's Talk</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <p class="hero-eyebrow">Entrepreneurship & Innovation Consulting</p>
+      <h1 class="hero-headline">
+        <span class="line"><span class="line-inner">Build</span></span>
+        <span class="line"><span class="line-inner"><em>What</em></span></span>
+        <span class="line"><span class="line-inner">Matters.</span></span>
+      </h1>
+      <p class="hero-sub">We help universities design entrepreneurship centers, programs, and operations that actually work — built by a practitioner, not a consultant.</p>
+      <div class="hero-actions">
+        <a href="#services" class="btn-primary"><span>See Our Services</span></a>
+        <a href="#about" class="btn-text">About Mike Raab <span class="arrow">→</span></a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-bg-text" id="heroBg">BUILD</div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="marquee-item">Space Design</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Programming & Curriculum</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Operations & Staffing</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Assessment & Roadmap</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Center Launch</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Student Outcomes</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Space Design</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Programming & Curriculum</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Operations & Staffing</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Assessment & Roadmap</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Center Launch</span><span class="marquee-item accent">✦</span>
+      <span class="marquee-item">Student Outcomes</span><span class="marquee-item accent">✦</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="about-photo">
+      <img src="Mike Raab Headshot 2024.jpeg" alt="Mike Raab" />
+    </div>
+    <div class="about-left">
+      <p class="section-label reveal">Who We Are</p>
+      <h2 class="about-headline reveal">Most consultants<br>study great centers.<br>We built one.</h2>
+      <div class="about-body reveal">
+        <p>Mike Raab is the Executive Director of <strong><a href="https://thegarage.northwestern.edu" target="_blank" rel="noopener">The Garage at Northwestern University</a></strong> — one of the country's most active student entrepreneurship centers. He's spent over a decade building programming, scaling operations, and designing spaces where students actually start things.</p>
+        <p>He's also the award-winning author of <strong><em><a href="https://www.amazon.com/Founded-B-S-Guide-Student-Entrepreneurs/dp/163909007X" target="_blank" rel="noopener">Founded: The No B.S. Guide for Student Entrepreneurs</a></em></strong> — an Amazon bestseller, because the best advice comes from people who've done the work, not studied it.</p>
+        <p>Now he advises universities that are ready to build something real.</p>
+      </div>
+    </div>
+    <div class="about-right">
+      <div class="credential reveal">
+        <div class="credential-num">01</div>
+        <div class="credential-text">
+          <strong>Executive Director, The Garage at Northwestern</strong>
+          <span>One of the nation's top-ranked student entrepreneurship centers — built and run from the ground up.</span>
+        </div>
+      </div>
+      <div class="credential reveal">
+        <div class="credential-num">02</div>
+        <div class="credential-text">
+          <strong>Award-Winning Author, Founded</strong>
+          <span>The no-BS guide to student entrepreneurship. Real advice from a real practitioner.</span>
+        </div>
+      </div>
+      <div class="credential reveal">
+        <div class="credential-num">03</div>
+        <div class="credential-text">
+          <strong>Practitioner-Led Consulting</strong>
+          <span>Every recommendation comes from lived experience — not frameworks borrowed from corporate consulting.</span>
+        </div>
+      </div>
+      <div class="credential reveal">
+        <div class="credential-num">04</div>
+        <div class="credential-text">
+          <strong>Built for Smaller Schools</strong>
+          <span>Resource-constrained universities can't afford to get this wrong. That's exactly who we serve.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHILOSOPHY -->
+  <section class="philosophy">
+    <p class="section-label reveal">My Philosophy</p>
+    <h2 class="philosophy-headline reveal">Most universities know they should be supporting student entrepreneurs.<br><em>Few have figured out how.</em></h2>
+    <p class="philosophy-body reveal">I've spent over a decade building a program that actually works — and now I help others do the same.</p>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services" id="services">
+    <div class="services-header">
+      <h2 class="services-headline reveal">What<br>We Do.</h2>
+      <p class="services-intro reveal">Three focused engagements — designed to meet you where you are and move you to where you want to be.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <p class="service-tag">Entry Engagement</p>
+        <h3 class="service-name">Assessment + Roadmap</h3>
+        <p class="service-desc">An honest evaluation of where your entrepreneurship center stands today — across space, programming, and operations — and a clear, prioritized plan for what to build next. Includes one full on-site visit, stakeholder interviews, and a formal report presentation to leadership.</p>
+        <div class="service-deliverable">Written Report + Leadership Presentation<div class="service-price">$7,500</div></div>
+      </div>
+      <div class="service-card reveal">
+        <p class="service-tag">Project Engagement</p>
+        <h3 class="service-name">Programming & Curriculum Build</h3>
+        <p class="service-desc">Focused engagement to design a full programming calendar, signature events, and student engagement model from scratch. Primarily remote with one on-site working session. Delivered in 6–8 weeks.</p>
+        <div class="service-deliverable">Programming Calendar + Implementation Guide<div class="service-price">$12K – $18K</div></div>
+      </div>
+      <div class="service-card reveal">
+        <p class="service-tag">Project Engagement</p>
+        <h3 class="service-name">Center Launch or Rebuild</h3>
+        <p class="service-desc">Full-scope engagement to design and launch — or significantly revamp — your entrepreneurship center. Covers space strategy, program design, staffing model, and launch plan. Includes multiple on-site visits and ongoing remote support over 3–6 months.</p>
+        <div class="service-deliverable">Full Deliverable Package<div class="service-price">$25K – $50K</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BAND -->
+  <div class="stats-band">
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="10">0<span>+</span></div>
+      <div class="stat-label">Years of practitioner experience</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="1000">0<span>+</span></div>
+      <div class="stat-label">Student entrepreneurs supported</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="3">0</div>
+      <div class="stat-label">Core service pillars</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="1">0</div>
+      <div class="stat-label">Book on student entrepreneurship</div>
+    </div>
+  </div>
+
+  <!-- PROCESS -->
+  <section class="process" id="process">
+    <div class="process-left">
+      <p class="section-label reveal">How It Works</p>
+      <h2 class="process-headline reveal">Simple.<br>Direct.<br>No<br>Fluff.</h2>
+    </div>
+    <div class="process-right">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-content"><strong>Intro Call</strong><p>30 minutes. We learn about where your program stands and where you want to go. No pitch deck, no pressure.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <div class="step-content"><strong>Scoping & Proposal</strong><p>We recommend the right engagement — usually starting with an Assessment — and send a clear, one-page proposal with a fixed fee.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <div class="step-content"><strong>On-Site Visit</strong><p>We come to your campus. We talk to students, staff, and leadership. We see the space. We get the full picture.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">04</div>
+        <div class="step-content"><strong>Roadmap Delivery</strong><p>You receive a written report and a presentation to leadership — clear priorities, practical steps, and honest assessments. No jargon.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">05</div>
+        <div class="step-content"><strong>Execution Support (Optional)</strong><p>If you want help building what's in the roadmap, we offer project-based engagements to go deeper. Most clients move from Assessment to a full project.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band" id="contact">
+    <h2 class="cta-headline reveal">Ready to<br>Build<br><em>Something</em><br>Real?</h2>
+    <div class="cta-right reveal">
+      <p class="cta-body">Whether you're opening a new center or rethinking an existing one — the best first step is a conversation. No agenda, no pitch. Just an honest talk about what you're building.</p>
+      <a href="mailto:mike@serendipitystudios.com" class="btn-white"><span>Start the Conversation</span></a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Serendipity Studios</div>
+    <p class="footer-copy">© 2026 — Built by a practitioner, not a consultant.</p>
+    <ul class="footer-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    });
+    (function animRing() {
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animRing);
+    })();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '16px'; cursor.style.height = '16px';
+        cursor.style.background = 'var(--black)';
+        ring.style.width = '48px'; ring.style.height = '48px';
+        ring.style.borderColor = 'var(--accent)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '10px'; cursor.style.height = '10px';
+        cursor.style.background = 'var(--accent)';
+        ring.style.width = '36px'; ring.style.height = '36px';
+        ring.style.borderColor = 'var(--black)';
+      });
+    });
+
+    // Nav scroll
+    window.addEventListener('scroll', () => {
+      document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Parallax hero bg
+    const heroBg = document.getElementById('heroBg');
+    window.addEventListener('scroll', () => {
+      if (heroBg) heroBg.style.transform = `translate(-50%, calc(-50% + ${window.scrollY * 0.25}px))`;
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window && document.body.scrollHeight > window.innerHeight * 1.5) {
+      document.body.classList.add('js-loaded');
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            setTimeout(() => e.target.classList.add('visible'), 80);
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      reveals.forEach(el => obs.observe(el));
+      setTimeout(() => reveals.forEach(el => el.classList.add('visible')), 2500);
+    }
+
+    // Animated counters
+    const counterObs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = parseInt(el.dataset.target);
+        const suffix = el.querySelector('span') ? el.querySelector('span').outerHTML : '';
+        let start = null;
+        const duration = 1600;
+        const step = ts => {
+          if (!start) start = ts;
+          const p = Math.min((ts - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          const val = Math.floor(eased * target);
+          const display = target >= 1000 ? (val >= 1000 ? '1K' : val) : val;
+          el.innerHTML = display + suffix;
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        counterObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stat-number[data-target]').forEach(el => counterObs.observe(el));
+  </script>
+</body>
+</html>
