@@ -565,13 +565,6 @@ select.data-input:focus { border-color: var(--accent); }
       <div id="gaps-content"></div>
     </div>
 
-    <!-- Peer Positioning Table -->
-    <div class="dash-card full">
-      <div class="card-label">Peer Positioning</div>
-      <div class="card-title">How Your Client Compares to the Top 25</div>
-      <p style="font-size:.8rem;color:var(--mid);margin-bottom:1rem;">Client row is highlighted. Sorted by overall score.</p>
-      <div style="overflow-x:auto"><table class="pos-table" id="peer-table"></table></div>
-    </div>
 
     <!-- Resources Inventory -->
     <div class="dash-card full">
@@ -1554,34 +1547,6 @@ function generateDashboard() {
           <span style="color:var(--accent)"> (${c.diff.toFixed(1)} vs peer avg)</span></p>
         </div>`).join('')
     : '<p style="color:var(--mid);font-size:.85rem">Enter data in Step 2 to see gaps.</p>';
-
-  // ── Peer positioning table ──
-  const clientRow = { name: centerName, center: uniName, p1:clientP[0], p2:clientP[1], p3:clientP[2], p4:clientP[3], isClient:true };
-  const tableData = [...peers.map(p => ({ ...p, total: p.p1+p.p2+p.p3+p.p4 })), { ...clientRow, total:clientTotal }]
-    .sort((a,b) => b.total - a.total);
-
-  const tbl = document.getElementById('peer-table');
-  tbl.innerHTML = `
-    <tr>
-      <th>#</th><th>Center</th><th>P1 · Space</th><th>P2 · Programs</th><th>P3 · Staffing</th><th>P4 · Outcomes</th><th>Total</th><th>vs Client</th>
-    </tr>
-    ${tableData.map((r, idx) => {
-      const diff = r.total - clientTotal;
-      const diffStr = r.isClient ? '—' :
-        diff === 0 ? '<span class="diff-neu">Even</span>' :
-        diff > 0 ? `<span class="diff-pos">+${diff}</span>` :
-        `<span class="diff-neg">${diff}</span>`;
-      return `<tr class="${r.isClient ? 'client-row' : ''}">
-        <td>${idx+1}</td>
-        <td><strong>${r.isClient ? '★ ' + r.name : r.name}</strong><br/><span style="font-size:.75rem;color:var(--mid)">${r.center || ''}</span></td>
-        <td style="text-align:center">${r.p1}</td>
-        <td style="text-align:center">${r.p2}</td>
-        <td style="text-align:center">${r.p3}</td>
-        <td style="text-align:center">${r.p4}</td>
-        <td style="text-align:center;font-weight:700">${r.total}</td>
-        <td style="text-align:center">${diffStr}</td>
-      </tr>`;
-    }).join('')}`;
 
   // ── Resource inventory summary ──
   const totalItems   = RESOURCES.reduce((a, c) => a + c.items.length, 0);
