@@ -360,16 +360,6 @@ select.data-input:focus { border-color: var(--accent); }
       <input type="text" id="city-state" placeholder="e.g., Albany, NY"/>
     </div>
     <div class="form-group">
-      <label>Engagement Type</label>
-      <select id="engagement-type">
-        <option value="">Select…</option>
-        <option>Assessment + Roadmap</option>
-        <option>Center Launch or Rebuild</option>
-        <option>Programming & Curriculum Build</option>
-        <option>Initial Consultation</option>
-      </select>
-    </div>
-    <div class="form-group">
       <label>Public or Private</label>
       <select id="pub-priv">
         <option value="">Select…</option>
@@ -399,10 +389,6 @@ select.data-input:focus { border-color: var(--accent); }
         <option value="large">30,000 – 50,000</option>
         <option value="very-large">Over 50,000</option>
       </select>
-    </div>
-    <div class="form-group">
-      <label>Assessment Date</label>
-      <input type="text" id="assess-date" placeholder="e.g., April 2026"/>
     </div>
   </div>
 
@@ -1419,7 +1405,7 @@ function generateDashboard() {
 
   document.getElementById('dash-title').textContent = `${centerName} · Benchmark Report`;
   document.getElementById('dash-subtitle').textContent =
-    `${uniName}  ·  Compared against Top 25 University Entrepreneurship Centers  ·  Serendipity Studios  ·  ${document.getElementById('assess-date').value || '2026'}`;
+    `${uniName}  ·  Compared against Top 25 University Entrepreneurship Centers  ·  Serendipity Studios`;
 
   const clientP     = [1,2,3,4].map(p => pillarTotal(p));
   const clientTotal = clientP.reduce((a,b) => a+b, 0);
