@@ -1229,7 +1229,7 @@ function buildNumberRow(p, i, c) {
     <div class="input-col">
       <label class="input-label">${c.label}</label>
       <div class="num-wrapper">
-        <input type="number" class="data-input" min="0" placeholder="${c.ph || ''}"
+        <input type="number" class="data-input" id="input-p${p}-c${i}" min="0" placeholder="${c.ph || ''}"
           oninput="updateInput(${p},${i},this.value)">
         ${c.unit ? `<span class="num-unit">${c.unit}</span>` : ''}
       </div>
@@ -1256,7 +1256,7 @@ function buildDropdownRow(p, i, c) {
     </div>
     <div class="input-col">
       <label class="input-label">${c.label}</label>
-      <select class="data-input" onchange="updateInput(${p},${i},this.value)">
+      <select class="data-input" id="input-p${p}-c${i}" onchange="updateInput(${p},${i},this.value)">
         <option value="">Select…</option>
         ${options}
       </select>
@@ -1400,7 +1400,24 @@ function toggleResource(id, el) {
 // ══════════════════════════════════════════════════════════════
 // DASHBOARD GENERATION
 // ══════════════════════════════════════════════════════════════
+function syncRawData() {
+  // Read all current DOM values directly — ensures data is captured
+  // even if oninput/onchange events were missed (tab key, copy-paste, etc.)
+  [1,2,3,4].forEach(p => {
+    CD[p].forEach((c, i) => {
+      if (c.type === 'checklist') {
+        const boxes = document.querySelectorAll(`.cb-p${p}-c${i}`);
+        rawData[p][i] = Array.from(boxes).filter(b => b.checked).length;
+      } else {
+        const el = document.getElementById(`input-p${p}-c${i}`);
+        if (el && el.value !== '') rawData[p][i] = el.value;
+      }
+    });
+  });
+}
+
 function generateDashboard() {
+  syncRawData();
   goStep(4);
 
   const uniName    = document.getElementById('uni-name').value || 'Client University';
