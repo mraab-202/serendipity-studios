@@ -3,15 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Serendipity Studios — Entrepreneurship Consulting</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <meta property="og:title" content="Serendipity Studios — University Entrepreneurship Consulting" />
-  <meta property="og:description" content="We help universities design entrepreneurship centers, programs, and operations that actually work." />
-  <meta property="og:image" content="https://serendipitystudios.co/og-image.png" />
-  <meta property="og:url" content="https://serendipitystudios.co" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://serendipitystudios.co/og-image.png" />
+  <title>Serendipity Studios — Entrepreneurship Consulting</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -266,7 +259,7 @@
 
     /* ABOUT */
     .about {
-      display: grid; grid-template-columns: 0.75fr 1.6fr; min-height: 80vh;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; min-height: 80vh;
     }
     .about-photo {
       border-right: 1px solid var(--rule);
@@ -277,7 +270,8 @@
       display: block;
     }
     .about-left {
-      padding: 6rem 3rem 6rem 3rem;
+      padding: 6rem 4rem 6rem 3rem;
+      border-right: 1px solid var(--rule);
       display: flex; flex-direction: column; justify-content: center;
     }
     .section-label {
@@ -290,7 +284,7 @@
       font-size: clamp(2rem, 3.5vw, 3rem);
       line-height: 1.25; color: var(--black); margin-bottom: 2rem;
     }
-    .about-body { font-size: 1rem; line-height: 1.8; color: var(--mid); }
+    .about-body { font-size: 1rem; line-height: 1.8; color: var(--mid); max-width: 480px; }
     .about-body p + p { margin-top: 1.2rem; }
     .about-body strong { color: var(--black); font-weight: 500; }
     .about-body a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent); transition: color 0.2s; }
@@ -349,41 +343,8 @@
       font-size: 1.1rem; line-height: 1.8; color: var(--mid);
     }
 
-    /* BELIEFS */
-    .beliefs {
-      border-top: 1px solid var(--rule);
-      padding: 4rem 3rem;
-      max-width: 860px; margin: 0 auto;
-    }
-    .beliefs-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3.5rem, 6vw, 6rem);
-      line-height: 0.95; color: var(--black);
-      margin-bottom: 3rem; display: block;
-    }
-    .beliefs-headline {
-      font-family: 'Instrument Serif', serif; font-style: italic;
-      font-size: clamp(1.8rem, 3vw, 2.5rem);
-      line-height: 1.3; color: var(--black); margin-bottom: 3rem;
-    }
-    .beliefs-list {
-      list-style: none; padding: 0; margin: 0;
-      display: flex; flex-direction: column; gap: 2rem;
-    }
-    .beliefs-list li {
-      display: grid; grid-template-columns: 2.5rem 1fr;
-      gap: 1rem; align-items: start;
-    }
-    .beliefs-list .belief-num {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem; color: var(--accent); line-height: 1.4;
-    }
-    .beliefs-list .belief-text {
-      font-size: 1.05rem; line-height: 1.8; color: var(--mid);
-    }
-
     /* SERVICES */
-    .services { border-top: 1px solid var(--rule); padding: 4rem 3rem; }
+    .services { border-top: 1px solid var(--rule); padding: 6rem 3rem; }
     .services-header {
       display: flex; justify-content: space-between; align-items: flex-end;
       margin-bottom: 4rem; padding-bottom: 2rem;
@@ -525,6 +486,9 @@
       position: relative; z-index: 1;
     }
     .cta-body { font-size: 1rem; line-height: 1.75; color: rgba(248,246,241,0.6); max-width: 400px; }
+    .cta-email { margin-top: 1rem; font-size: 0.85rem; color: rgba(248,246,241,0.45); }
+    .cta-email a { color: rgba(248,246,241,0.7); text-decoration: underline; }
+    .cta-email a:hover { color: rgba(248,246,241,1); }
     .btn-white {
       background: var(--white); color: var(--black);
       font-size: 0.78rem; font-weight: 500;
@@ -581,7 +545,7 @@
       .hero-left { padding: 4rem 1.5rem; }
       .hero-bg-text { display: none; }
       .about { grid-template-columns: 1fr; }
-      .about-photo { display: block; height: 60vw; max-height: 400px; border-right: none; border-bottom: 1px solid var(--rule); }
+      .about-photo { display: none; }
       .about-left { padding: 4rem 1.5rem 2rem; border-right: none; border-bottom: 1px solid var(--rule); }
       .about-right { padding: 2rem 1.5rem 4rem; }
       .services { padding: 4rem 1.5rem; }
@@ -607,7 +571,6 @@
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
       <li><a href="#services">Services</a></li>
-      <li><a href="#process">Process</a></li>
       <li><a href="Serendipity-Studios-Client-Benchmark-Comparison.html">Benchmarking</a></li>
       <li><a href="mailto:mike@serendipitystudios.co" class="nav-cta">Let's Talk</a></li>
     </ul>
@@ -616,7 +579,7 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-left">
-      <p class="hero-eyebrow">University Entrepreneurship & Innovation Consulting</p>
+      <p class="hero-eyebrow">Entrepreneurship & Innovation Consulting</p>
       <h1 class="hero-headline">
         <span class="line"><span class="line-inner">Build</span></span>
         <span class="line"><span class="line-inner"><em>What</em></span></span>
@@ -651,48 +614,63 @@
     </div>
   </div>
 
-  <!-- BELIEFS -->
-  <section class="beliefs">
-    <p class="beliefs-title reveal">I Believe</p>
-    <ul class="beliefs-list">
-      <li class="reveal">
-        <span class="belief-num">1</span>
-        <span class="belief-text">Now, more than ever, it's imperative that universities have resources for aspiring student entrepreneurs.</span>
-      </li>
-      <li class="reveal">
-        <span class="belief-num">2</span>
-        <span class="belief-text">Entrepreneurship centers act as a flywheel for university ecosystems: attracting ambitious prospective students, enriching the student experience, and allowing accomplished alumni to engage with the ecosystem in a meaningful way.</span>
-      </li>
-      <li class="reveal">
-        <span class="belief-num">3</span>
-        <span class="belief-text">No matter the available resources or funding, any university can stand up or improve their entrepreneurship offerings. The most crucial components to having a big impact are the programming strategy and people, not just competitions with large prize pools.</span>
-      </li>
-      <li class="reveal">
-        <span class="belief-num">4</span>
-        <span class="belief-text">Every university — whether a flagship research institution or a small liberal arts college — deserves world-class support for their student entrepreneurs. Ambition isn't determined by endowment size.</span>
-      </li>
-    </ul>
-  </section>
-
   <!-- ABOUT -->
   <section class="about" id="about">
     <div class="about-photo">
       <img src="Mike Raab Headshot 2024.jpeg" alt="Mike Raab" />
     </div>
     <div class="about-left">
+      <p class="section-label reveal">Who We Are</p>
       <h2 class="about-headline reveal">Most consultants<br>study great centers.<br>We built one.</h2>
       <div class="about-body reveal">
-        <p>Mike Raab is the Executive Director of <strong><a href="https://thegarage.northwestern.edu" target="_blank" rel="noopener">The Garage at Northwestern University</a></strong> — one of the country's most active student entrepreneurship centers, engaging more than 3,000 students per year. He's spent over a decade building programming, scaling operations, and designing spaces where students bring their ideas to life and solve the problems that they see in the world. Companies from The Garage have gone on to raise over <strong>$1.5 billion</strong>.</p>
-        <p>He's also the award-winning author of <strong><em><a href="https://www.amazon.com/Founded-B-S-Guide-Student-Entrepreneurs/dp/163909007X" target="_blank" rel="noopener">Founded: The No B.S. Guide for Student Entrepreneurs</a></em></strong> — an Amazon bestseller, and the book he wished he had to hand to ambitious student entrepreneurs.</p>
+        <p>Mike Raab is the Executive Director of <strong><a href="https://thegarage.northwestern.edu" target="_blank" rel="noopener">The Garage at Northwestern University</a></strong> — one of the country's most active student entrepreneurship centers, engaging more than 3,000 students per year. He's spent over a decade building programming, scaling operations, and designing spaces where students actually start things. Companies from The Garage have gone on to raise over <strong>$1.5 billion</strong>.</p>
+        <p>He's also the award-winning author of <strong><em><a href="https://www.amazon.com/Founded-B-S-Guide-Student-Entrepreneurs/dp/163909007X" target="_blank" rel="noopener">Founded: The No B.S. Guide for Student Entrepreneurs</a></em></strong> — an Amazon bestseller, because the best advice comes from people who've done the work, not studied it.</p>
         <p>Now he advises universities that are ready to build something real.</p>
       </div>
     </div>
+    <div class="about-right">
+      <div class="credential reveal">
+        <div class="credential-num">01</div>
+        <div class="credential-text">
+          <strong>Executive Director, The Garage at Northwestern</strong>
+          <span>One of the nation's top-ranked student entrepreneurship centers — built and run from the ground up.</span>
+        </div>
+      </div>
+      <div class="credential reveal">
+        <div class="credential-num">02</div>
+        <div class="credential-text">
+          <strong>Award-Winning Author, Founded</strong>
+          <span>The no-BS guide to student entrepreneurship. Real advice from a real practitioner.</span>
+        </div>
+      </div>
+      <div class="credential reveal">
+        <div class="credential-num">03</div>
+        <div class="credential-text">
+          <strong>Practitioner-Led Consulting</strong>
+          <span>Every recommendation comes from lived experience — not frameworks borrowed from corporate consulting.</span>
+        </div>
+      </div>
+      <div class="credential reveal">
+        <div class="credential-num">04</div>
+        <div class="credential-text">
+          <strong>Built for Smaller Schools</strong>
+          <span>Resource-constrained universities can't afford to get this wrong. That's exactly who we serve.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHILOSOPHY -->
+  <section class="philosophy">
+    <p class="section-label reveal">My Philosophy</p>
+    <h2 class="philosophy-headline reveal">Most universities know they should be supporting student entrepreneurs.<br><em>Few have figured out how.</em></h2>
+    <p class="philosophy-body reveal">I've spent over a decade building a program that actually works — and now I help others do the same.</p>
   </section>
 
   <!-- SERVICES -->
   <section class="services" id="services">
     <div class="services-header">
-      <h2 class="services-headline reveal">What We Do.</h2>
+      <h2 class="services-headline reveal">What<br>We Do.</h2>
       <p class="services-intro reveal">Three focused engagements — designed to meet you where you are and move you to where you want to be.</p>
     </div>
     <div class="services-grid">
@@ -718,21 +696,50 @@
   </section>
 
 
+  <!-- PROCESS -->
+  <section class="process" id="process">
+    <div class="process-left">
+      <p class="section-label reveal">How It Works</p>
+      <h2 class="process-headline reveal">Simple.<br>Direct.<br>No<br>Fluff.</h2>
+    </div>
+    <div class="process-right">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-content"><strong>Intro Call</strong><p>30 minutes. We learn about where your program stands and where you want to go. No pitch deck, no pressure.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <div class="step-content"><strong>Scoping & Proposal</strong><p>We recommend the right engagement — usually starting with an Assessment — and send a clear, one-page proposal with a fixed fee.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <div class="step-content"><strong>On-Site Visit</strong><p>We come to your campus. We talk to students, staff, and leadership. We see the space. We get the full picture.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">04</div>
+        <div class="step-content"><strong>Roadmap Delivery</strong><p>You receive a written report and a presentation to leadership — clear priorities, practical steps, and honest assessments. No jargon.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">05</div>
+        <div class="step-content"><strong>Execution Support (Optional)</strong><p>If you want help building what's in the roadmap, we offer project-based engagements to go deeper. Most clients move from Assessment to a full project.</p></div>
+      </div>
+    </div>
+  </section>
 
   <!-- CTA -->
   <section class="cta-band" id="contact">
-    <h2 class="cta-headline reveal">Ready to<br><em>Build</em><br>Something<br><em>Impactful?</em></h2>
+    <h2 class="cta-headline reveal">Ready to<br>Build<br><em>Something</em><br>Real?</h2>
     <div class="cta-right reveal">
       <p class="cta-body">Whether you're opening a new center or rethinking an existing one — the best first step is a conversation. No agenda, no pitch. Just an honest talk about what you're building.</p>
       <a href="mailto:mike@serendipitystudios.co" class="btn-white"><span>Start the Conversation</span></a>
-      <p style="margin-top:1.2rem; font-size:0.9rem; color:rgba(248,246,241,0.5);">or email directly: <a href="mailto:mike@serendipitystudios.co" style="color:rgba(248,246,241,0.7); text-decoration:underline;">mike@serendipitystudios.co</a></p>
+      <p class="cta-email">or email directly: <a href="mailto:mike@serendipitystudios.co">mike@serendipitystudios.co</a></p>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer>
     <div class="footer-logo">Serendipity Studios</div>
-    <p class="footer-copy">© 2026 Serendipity Studios</p>
+    <p class="footer-copy">© 2026 — Built by a practitioner, not a consultant.</p>
     <ul class="footer-links">
       <li><a href="#about">About</a></li>
       <li><a href="#services">Services</a></li>
