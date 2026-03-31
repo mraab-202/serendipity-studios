@@ -349,6 +349,18 @@ select.data-input:focus { border-color: var(--accent); }
   <p class="section-desc">Enter basic information about the entrepreneurship center you are assessing. This information will be used to find the most relevant peer comparisons.</p>
 
   <div class="form-grid">
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="contact-name" placeholder="e.g., Jane Smith"/>
+    </div>
+    <div class="form-group">
+      <label>Your Title</label>
+      <input type="text" id="contact-title" placeholder="e.g., Director of Entrepreneurship"/>
+    </div>
+    <div class="form-group full">
+      <label>Your Email</label>
+      <input type="email" id="contact-email" placeholder="e.g., jane@university.edu"/>
+    </div>
     <div class="form-group full">
       <label>University Name</label>
       <input type="text" id="uni-name" placeholder="e.g., State University of New York at Albany"/>
@@ -1405,8 +1417,11 @@ function generateDashboard() {
   const centerName = document.getElementById('center-name').value || 'Entrepreneurship Center';
 
   // Auto-email results to mike@serendipitystudios.co
-  const clientP = [1,2,3,4].map(p => pillarTotal(p));
-  sendBenchmarkEmail('mike@serendipitystudios.co', '', uniName, centerName, clientP);
+  const clientP      = [1,2,3,4].map(p => pillarTotal(p));
+  const contactName  = document.getElementById('contact-name').value  || '';
+  const contactTitle = document.getElementById('contact-title').value || '';
+  const contactEmail = document.getElementById('contact-email').value || '';
+  sendBenchmarkEmail('mike@serendipitystudios.co', '', uniName, centerName, clientP, contactName, contactTitle);
   const filter     = document.getElementById('compare-filter').value;
 
   document.getElementById('dash-title').textContent = `${centerName} · Benchmark Report`;
@@ -1614,8 +1629,11 @@ buildResourcesUI();
 // EMAIL RESULTS
 // ══════════════════════════════════════════════════════════════
 function emailResults() {
-  document.getElementById('modal-name').value  = '';
-  document.getElementById('modal-email').value = '';
+  // Pre-fill from Step 1 if available
+  const n = document.getElementById('contact-name').value;
+  const e = document.getElementById('contact-email').value;
+  document.getElementById('modal-name').value  = n || '';
+  document.getElementById('modal-email').value = e || '';
   document.getElementById('email-modal').style.display = 'flex';
 }
 
@@ -1631,19 +1649,21 @@ function getRating(total) {
   return 'Needs Major Intervention';
 }
 
-function sendBenchmarkEmail(toEmail, ccEmail, uniName, centerName, clientP) {
+function sendBenchmarkEmail(toEmail, ccEmail, uniName, centerName, clientP, contactName, contactTitle) {
   const total = clientP.reduce((a,b) => a+b, 0);
   return emailjs.send('service_ktcdpar', 'template_fylk9sj', {
-    to_email:    toEmail,
-    cc_email:    ccEmail,
-    uni_name:    uniName,
-    center_name: centerName,
-    total_score: total,
-    p1_score:    clientP[0],
-    p2_score:    clientP[1],
-    p3_score:    clientP[2],
-    p4_score:    clientP[3],
-    rating:      getRating(total),
+    to_email:      toEmail,
+    cc_email:      ccEmail,
+    uni_name:      uniName,
+    center_name:   centerName,
+    contact_name:  contactName  || '',
+    contact_title: contactTitle || '',
+    total_score:   total,
+    p1_score:      clientP[0],
+    p2_score:      clientP[1],
+    p3_score:      clientP[2],
+    p4_score:      clientP[3],
+    rating:        getRating(total),
   });
 }
 
@@ -1652,15 +1672,16 @@ function sendResultsEmail() {
   const email = document.getElementById('modal-email').value.trim();
   if (!email) { alert('Please enter your email address.'); return; }
 
-  const uniName    = document.getElementById('uni-name').value    || 'Not provided';
-  const centerName = document.getElementById('center-name').value || 'Not provided';
-  const clientP    = [1,2,3,4].map(p => pillarTotal(p));
+  const uniName      = document.getElementById('uni-name').value      || 'Not provided';
+  const centerName   = document.getElementById('center-name').value   || 'Not provided';
+  const contactTitle = document.getElementById('contact-title').value || '';
+  const clientP      = [1,2,3,4].map(p => pillarTotal(p));
 
   const btn = document.querySelector('#email-modal .btn-accent');
   btn.textContent = 'Sending…';
   btn.disabled = true;
 
-  sendBenchmarkEmail(email, 'mike@serendipitystudios.co', uniName, centerName, clientP)
+  sendBenchmarkEmail(email, 'mike@serendipitystudios.co', uniName, centerName, clientP, name, contactTitle)
     .then(() => {
       closeEmailModal();
       btn.textContent = 'Send Results';
