@@ -63,7 +63,7 @@ input[type=text], select {
 input[type=text]:focus, select:focus { border-color: var(--accent); }
 
 /* ── PILLAR TABS ──────────────────────────────────────────────── */
-.pillar-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--rule); margin-bottom: 2rem; }
+.pillar-tabs { display: none; }
 .ptab {
   padding: .7rem 1.4rem; font-size: .78rem; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
@@ -73,7 +73,7 @@ input[type=text]:focus, select:focus { border-color: var(--accent); }
 .ptab:hover { color: var(--black); }
 .ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-.pillar-panel { display: none; }
+.pillar-panel { display: block; border-top: 2px solid var(--rule); margin-top: 2rem; padding-top: 1rem; }
 .pillar-panel.active { display: block; }
 
 .pillar-header {
