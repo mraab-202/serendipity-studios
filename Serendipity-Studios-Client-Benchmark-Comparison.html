@@ -619,6 +619,7 @@ select.data-input:focus { border-color: var(--accent); }
         <button class="btn btn-accent" onclick="sendResultsEmail()" style="flex:1;">Send Results</button>
         <button class="btn btn-outline" onclick="closeEmailModal()" style="flex:1;">Cancel</button>
       </div>
+      <p style="font-size:.75rem; color:#aaa; margin-top:1rem; margin-bottom:0;">If you don't see the email, please check your spam or junk folder.</p>
     </div>
   </div>
 
@@ -1698,6 +1699,8 @@ function sendBenchmarkEmail(toEmail, ccEmail, uniName, centerName, clientP, cont
   return emailjs.send('service_ktcdpar', 'template_fylk9sj', {
     to_email:      toEmail,
     cc_email:      ccEmail,
+    name:          'Serendipity Studios',      // satisfies {{name}} in From Name field
+    email:         contactEmail || toEmail,    // satisfies {{email}} in Reply To field
     uni_name:      uniName,
     center_name:   centerName,
     contact_name:  contactName  || '',
