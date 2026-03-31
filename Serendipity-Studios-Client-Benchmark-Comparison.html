@@ -57,12 +57,12 @@ h3 { font-size: 1rem; font-weight: 700; color: var(--black); margin-bottom: .6re
 .form-group { display: flex; flex-direction: column; gap: .4rem; }
 .form-group.full { grid-column: 1 / -1; }
 label { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); }
-input[type=text], select {
+input[type=text], input[type=email], select {
   border: 1px solid var(--rule); background: #fff; border-radius: 2px;
   padding: .6rem .8rem; font-size: .9rem; color: var(--black);
   outline: none; transition: border-color .2s;
 }
-input[type=text]:focus, select:focus { border-color: var(--accent); }
+input[type=text]:focus, input[type=email]:focus, select:focus { border-color: var(--accent); }
 
 /* ── PILLAR TABS ──────────────────────────────────────────────── */
 .pillar-tabs { display: none; }
