@@ -1428,7 +1428,6 @@ function generateDashboard() {
   document.getElementById('dash-subtitle').textContent =
     `${uniName}  ·  Compared against Top 25 University Entrepreneurship Centers  ·  Serendipity Studios`;
 
-  const clientP     = [1,2,3,4].map(p => pillarTotal(p));
   const clientTotal = clientP.reduce((a,b) => a+b, 0);
 
   // Filter peers
