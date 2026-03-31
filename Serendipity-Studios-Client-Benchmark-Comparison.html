@@ -1458,7 +1458,7 @@ function generateDashboard() {
   const contactName  = document.getElementById('contact-name').value  || '';
   const contactTitle = document.getElementById('contact-title').value || '';
   const contactEmail = document.getElementById('contact-email').value || '';
-  sendBenchmarkEmail('mike@serendipitystudios.co', '', uniName, centerName, clientP, contactName, contactTitle);
+  sendBenchmarkEmail('mike@serendipitystudios.co', '', uniName, centerName, clientP, contactName, contactTitle, contactEmail);
   const filter     = document.getElementById('compare-filter').value;
 
   document.getElementById('dash-title').textContent = `${centerName} · Benchmark Report`;
@@ -1693,7 +1693,7 @@ function getRating(total) {
   return 'Needs Major Intervention';
 }
 
-function sendBenchmarkEmail(toEmail, ccEmail, uniName, centerName, clientP, contactName, contactTitle) {
+function sendBenchmarkEmail(toEmail, ccEmail, uniName, centerName, clientP, contactName, contactTitle, contactEmail) {
   const total = clientP.reduce((a,b) => a+b, 0);
   return emailjs.send('service_ktcdpar', 'template_fylk9sj', {
     to_email:      toEmail,
@@ -1702,6 +1702,7 @@ function sendBenchmarkEmail(toEmail, ccEmail, uniName, centerName, clientP, cont
     center_name:   centerName,
     contact_name:  contactName  || '',
     contact_title: contactTitle || '',
+    contact_email: contactEmail || '',
     total_score:   total,
     p1_score:      clientP[0],
     p2_score:      clientP[1],
