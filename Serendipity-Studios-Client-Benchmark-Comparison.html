@@ -1406,23 +1406,7 @@ function generateDashboard() {
 
   // Auto-email results to mike@serendipitystudios.co
   const clientP = [1,2,3,4].map(p => pillarTotal(p));
-  emailjs.send('service_ktcdpar', 'template_fylk9sj', {
-    uni_name:     uniName,
-    center_name:  centerName,
-    total_score:  clientP.reduce((a,b) => a+b, 0),
-    p1_score:     clientP[0],
-    p2_score:     clientP[1],
-    p3_score:     clientP[2],
-    p4_score:     clientP[3],
-    rating:       (() => {
-      const t = clientP.reduce((a,b)=>a+b,0);
-      if (t>=130) return 'Best-in-Class';
-      if (t>=100) return 'Strong Program';
-      if (t>=70)  return 'Developing Center';
-      if (t>=40)  return 'Early Stage';
-      return 'Needs Major Intervention';
-    })(),
-  }).catch(() => {}); // silent fail — don't interrupt the user
+  sendBenchmarkEmail('mike@serendipitystudios.co', '', uniName, centerName, clientP);
   const filter     = document.getElementById('compare-filter').value;
 
   document.getElementById('dash-title').textContent = `${centerName} · Benchmark Report`;
@@ -1639,6 +1623,30 @@ function closeEmailModal() {
   document.getElementById('email-modal').style.display = 'none';
 }
 
+function getRating(total) {
+  if (total >= 130) return 'Best-in-Class';
+  if (total >= 100) return 'Strong Program';
+  if (total >= 70)  return 'Developing Center';
+  if (total >= 40)  return 'Early Stage';
+  return 'Needs Major Intervention';
+}
+
+function sendBenchmarkEmail(toEmail, ccEmail, uniName, centerName, clientP) {
+  const total = clientP.reduce((a,b) => a+b, 0);
+  return emailjs.send('service_ktcdpar', 'template_fylk9sj', {
+    to_email:    toEmail,
+    cc_email:    ccEmail,
+    uni_name:    uniName,
+    center_name: centerName,
+    total_score: total,
+    p1_score:    clientP[0],
+    p2_score:    clientP[1],
+    p3_score:    clientP[2],
+    p4_score:    clientP[3],
+    rating:      getRating(total),
+  });
+}
+
 function sendResultsEmail() {
   const name  = document.getElementById('modal-name').value.trim();
   const email = document.getElementById('modal-email').value.trim();
@@ -1646,46 +1654,23 @@ function sendResultsEmail() {
 
   const uniName    = document.getElementById('uni-name').value    || 'Not provided';
   const centerName = document.getElementById('center-name').value || 'Not provided';
-  const total      = document.getElementById('d-total').textContent.replace('/160','').trim();
-  const rating     = document.getElementById('d-rating').textContent.trim();
+  const clientP    = [1,2,3,4].map(p => pillarTotal(p));
 
-  const pillarNames = ['', 'Physical Space', 'Programming & Curriculum', 'Staffing & Operations', 'Student Outcomes'];
-  const pillarLines = [1,2,3,4].map(p => `  Pillar ${p} - ${pillarNames[p]}: ${pillarTotal(p)}/40`).join('\n');
+  const btn = document.querySelector('#email-modal .btn-accent');
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
 
-  const bodyText =
-`Hi ${name || 'there'},
-
-Here are your Serendipity Studios Benchmark Assessment results:
-
-University: ${uniName}
-Center: ${centerName}
-Overall Score: ${total}/160
-Rating: ${rating}
-
-Pillar Breakdown:
-${pillarLines}
-
-To revisit the full report:
-https://serendipitystudios.co/Serendipity-Studios-Client-Benchmark-Comparison.html
-
-Ready to talk through your results? Schedule a free 30-minute call:
-https://calendly.com/mike-raab/serendipity-studios
-
-- Serendipity Studios
-mike@serendipitystudios.co`;
-
-  const subject = encodeURIComponent(`Benchmark Results: ${centerName || uniName}`);
-  const body    = encodeURIComponent(bodyText);
-  const mailto  = `mailto:${email}?cc=mike@serendipitystudios.co&subject=${subject}&body=${body}`;
-
-  // Use a hidden anchor click — more reliable than window.location.href
-  const a = document.createElement('a');
-  a.href = mailto;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  closeEmailModal();
+  sendBenchmarkEmail(email, 'mike@serendipitystudios.co', uniName, centerName, clientP)
+    .then(() => {
+      closeEmailModal();
+      btn.textContent = 'Send Results';
+      btn.disabled = false;
+    })
+    .catch(() => {
+      alert('There was a problem sending the email. Please try again.');
+      btn.textContent = 'Send Results';
+      btn.disabled = false;
+    });
 }
 </script>
 </body>
