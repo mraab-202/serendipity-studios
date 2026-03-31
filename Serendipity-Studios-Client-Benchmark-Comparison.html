@@ -593,8 +593,38 @@ select.data-input:focus { border-color: var(--accent); }
   <div class="btn-row">
     <button class="btn btn-outline" onclick="goStep(3)">← Edit Resources</button>
     <button class="btn btn-primary" onclick="window.print()">⎙ Print Report</button>
+    <button class="btn btn-accent" onclick="emailResults()">✉ Email Me My Results</button>
     <button class="btn btn-outline" onclick="goStep(1)">New Assessment</button>
   </div>
+
+  <!-- Email capture modal -->
+  <div id="email-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; display:none; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:4px; padding:2.5rem; max-width:440px; width:90%; position:relative;">
+      <h2 style="margin-bottom:.5rem; font-size:1.2rem;">Email My Results</h2>
+      <p style="font-size:.85rem; color:#666; margin-bottom:1.5rem;">Enter your email and we'll send you a summary of your benchmark results.</p>
+      <div style="display:flex; flex-direction:column; gap:.5rem; margin-bottom:1.2rem;">
+        <label style="font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#666;">Your Name</label>
+        <input type="text" id="modal-name" placeholder="Jane Smith" style="border:1px solid #ddd; border-radius:2px; padding:.6rem .8rem; font-size:.9rem;" />
+      </div>
+      <div style="display:flex; flex-direction:column; gap:.5rem; margin-bottom:1.5rem;">
+        <label style="font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#666;">Your Email</label>
+        <input type="email" id="modal-email" placeholder="you@university.edu" style="border:1px solid #ddd; border-radius:2px; padding:.6rem .8rem; font-size:.9rem;" />
+      </div>
+      <div style="display:flex; gap:.8rem;">
+        <button class="btn btn-accent" onclick="sendResultsEmail()" style="flex:1;">Send Results</button>
+        <button class="btn btn-outline" onclick="closeEmailModal()" style="flex:1;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendly CTA -->
+  <div style="margin-top:3rem; border-top:1px solid #e5e0d8; padding-top:3rem; text-align:center;">
+    <div style="font-size:.7rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#c83c1e; margin-bottom:.8rem;">Ready to Act on This?</div>
+    <h2 style="font-size:1.6rem; font-weight:700; color:#1a1a1a; margin-bottom:.8rem;">Schedule a Free 30-Minute Call</h2>
+    <p style="font-size:.95rem; color:#666; max-width:480px; margin:0 auto 1.5rem;">Walk through your results with Mike Raab. No pitch, no pressure — just an honest conversation about what your center is building and where we can help.</p>
+    <a href="https://calendly.com/mike-raab/serendipity-studios" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.85rem; padding:.9rem 2.2rem; text-decoration:none;">Schedule a Call →</a>
+  </div>
+
 </div>
 
 <script>
@@ -1605,6 +1635,53 @@ function generateDashboard() {
 // ══════════════════════════════════════════════════════════════
 buildCriteriaUI();
 buildResourcesUI();
+
+// ══════════════════════════════════════════════════════════════
+// EMAIL RESULTS
+// ══════════════════════════════════════════════════════════════
+function emailResults() {
+  document.getElementById('email-modal').style.display = 'flex';
+}
+
+function closeEmailModal() {
+  document.getElementById('email-modal').style.display = 'none';
+}
+
+function sendResultsEmail() {
+  const name  = document.getElementById('modal-name').value.trim();
+  const email = document.getElementById('modal-email').value.trim();
+  if (!email) { alert('Please enter your email address.'); return; }
+
+  const uniName    = document.getElementById('uni-name').value    || 'Not provided';
+  const centerName = document.getElementById('center-name').value || 'Not provided';
+  const total      = document.getElementById('d-total').textContent;
+  const rating     = document.getElementById('d-rating').textContent;
+
+  const subject = encodeURIComponent(`Benchmark Results: ${centerName || uniName}`);
+  const body = encodeURIComponent(
+`Hi ${name || 'there'},
+
+Here's a summary of your Serendipity Studios Benchmark Assessment:
+
+University: ${uniName}
+Center: ${centerName}
+Overall Score: ${total}
+Rating: ${rating}
+
+To review the full report, revisit the benchmarking tool at:
+https://serendipitystudios.co/Serendipity-Studios-Client-Benchmark-Comparison.html
+
+Ready to talk through your results? Schedule a free 30-minute call with Mike Raab:
+https://calendly.com/mike-raab/serendipity-studios
+
+— Serendipity Studios
+mike@serendipitystudios.co
+`);
+
+  // Open mailto — sends to user, CC's Mike
+  window.location.href = `mailto:${email}?cc=mike@serendipitystudios.co&subject=${subject}&body=${body}`;
+  closeEmailModal();
+}
 </script>
 </body>
 </html>
