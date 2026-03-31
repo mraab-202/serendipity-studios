@@ -591,16 +591,21 @@ select.data-input:focus { border-color: var(--accent); }
   </div>
 
   <!-- Email capture modal -->
-  <div id="email-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:4px; padding:2rem; max-width:520px; width:92%; position:relative; max-height:90vh; overflow-y:auto;">
-      <h2 style="margin-bottom:.4rem; font-size:1.15rem;">Your Benchmark Results</h2>
-      <p style="font-size:.82rem; color:#666; margin-bottom:1.2rem;">Copy the text below and paste it into an email, or click "Open in Mail App" to launch your email client.</p>
-      <textarea id="email-body-text" readonly style="width:100%; height:220px; border:1px solid #ddd; border-radius:2px; padding:.8rem; font-size:.8rem; font-family:monospace; color:#333; background:#f9f9f9; resize:none; line-height:1.55;"></textarea>
-      <div id="copy-confirm" style="display:none; font-size:.78rem; color:#2a9; font-weight:700; margin:.5rem 0 0;">✓ Copied to clipboard!</div>
-      <div style="display:flex; gap:.8rem; margin-top:1rem; flex-wrap:wrap;">
-        <button class="btn btn-accent" onclick="copyResultsText()" style="flex:1; min-width:130px;">Copy to Clipboard</button>
-        <button class="btn btn-outline" onclick="openMailApp()" style="flex:1; min-width:130px;">Open in Mail App</button>
-        <button class="btn btn-outline" onclick="closeEmailModal()" style="flex:1; min-width:80px;">Close</button>
+  <div id="email-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:4px; padding:2.5rem; max-width:440px; width:90%; position:relative;">
+      <h2 style="margin-bottom:.5rem; font-size:1.2rem;">Email My Results</h2>
+      <p style="font-size:.85rem; color:#666; margin-bottom:1.5rem;">Enter your email and we'll send you a summary of your benchmark results.</p>
+      <div style="display:flex; flex-direction:column; gap:.5rem; margin-bottom:1.2rem;">
+        <label style="font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#666;">Your Name</label>
+        <input type="text" id="modal-name" placeholder="Jane Smith" style="border:1px solid #ddd; border-radius:2px; padding:.6rem .8rem; font-size:.9rem;" />
+      </div>
+      <div style="display:flex; flex-direction:column; gap:.5rem; margin-bottom:1.5rem;">
+        <label style="font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#666;">Your Email</label>
+        <input type="email" id="modal-email" placeholder="you@university.edu" style="border:1px solid #ddd; border-radius:2px; padding:.6rem .8rem; font-size:.9rem;" />
+      </div>
+      <div style="display:flex; gap:.8rem;">
+        <button class="btn btn-accent" onclick="sendResultsEmail()" style="flex:1;">Send Results</button>
+        <button class="btn btn-outline" onclick="closeEmailModal()" style="flex:1;">Cancel</button>
       </div>
     </div>
   </div>
@@ -1616,44 +1621,9 @@ buildResourcesUI();
 // ══════════════════════════════════════════════════════════════
 // EMAIL RESULTS
 // ══════════════════════════════════════════════════════════════
-function buildResultsText() {
-  const uniName    = document.getElementById('uni-name').value    || 'Not provided';
-  const centerName = document.getElementById('center-name').value || 'Not provided';
-  const total      = document.getElementById('d-total').textContent.replace('/160','').trim();
-  const rating     = document.getElementById('d-rating').textContent.trim();
-
-  const pillarNames = ['', 'Physical Space', 'Programming & Curriculum', 'Staffing & Operations', 'Student Outcomes'];
-  const pillarLines = [1,2,3,4].map(p => {
-    const t = pillarTotal(p);
-    return `  Pillar ${p} · ${pillarNames[p]}: ${t}/40`;
-  }).join('\n');
-
-  return `SERENDIPITY STUDIOS — BENCHMARK ASSESSMENT RESULTS
-${'─'.repeat(52)}
-
-University: ${uniName}
-Center: ${centerName}
-
-OVERALL SCORE: ${total}/160
-RATING: ${rating}
-
-PILLAR BREAKDOWN:
-${pillarLines}
-
-─────────────────────────────────────────────────────
-To revisit the full report:
-https://serendipitystudios.co/Serendipity-Studios-Client-Benchmark-Comparison.html
-
-Ready to talk through your results?
-Schedule a free 30-minute call with Mike Raab:
-https://calendly.com/mike-raab/serendipity-studios
-
-— Serendipity Studios · mike@serendipitystudios.co`;
-}
-
 function emailResults() {
-  document.getElementById('email-body-text').value = buildResultsText();
-  document.getElementById('copy-confirm').style.display = 'none';
+  document.getElementById('modal-name').value  = '';
+  document.getElementById('modal-email').value = '';
   document.getElementById('email-modal').style.display = 'flex';
 }
 
@@ -1661,28 +1631,53 @@ function closeEmailModal() {
   document.getElementById('email-modal').style.display = 'none';
 }
 
-function copyResultsText() {
-  const ta = document.getElementById('email-body-text');
-  ta.select();
-  ta.setSelectionRange(0, 99999);
-  try {
-    navigator.clipboard.writeText(ta.value).catch(() => document.execCommand('copy'));
-  } catch(e) {
-    document.execCommand('copy');
-  }
-  const confirm = document.getElementById('copy-confirm');
-  confirm.style.display = 'block';
-  setTimeout(() => { confirm.style.display = 'none'; }, 2500);
-}
+function sendResultsEmail() {
+  const name  = document.getElementById('modal-name').value.trim();
+  const email = document.getElementById('modal-email').value.trim();
+  if (!email) { alert('Please enter your email address.'); return; }
 
-function openMailApp() {
-  const uniName    = document.getElementById('uni-name').value    || '';
-  const centerName = document.getElementById('center-name').value || '';
+  const uniName    = document.getElementById('uni-name').value    || 'Not provided';
+  const centerName = document.getElementById('center-name').value || 'Not provided';
+  const total      = document.getElementById('d-total').textContent.replace('/160','').trim();
+  const rating     = document.getElementById('d-rating').textContent.trim();
+
+  const pillarNames = ['', 'Physical Space', 'Programming & Curriculum', 'Staffing & Operations', 'Student Outcomes'];
+  const pillarLines = [1,2,3,4].map(p => `  Pillar ${p} - ${pillarNames[p]}: ${pillarTotal(p)}/40`).join('\n');
+
+  const bodyText =
+`Hi ${name || 'there'},
+
+Here are your Serendipity Studios Benchmark Assessment results:
+
+University: ${uniName}
+Center: ${centerName}
+Overall Score: ${total}/160
+Rating: ${rating}
+
+Pillar Breakdown:
+${pillarLines}
+
+To revisit the full report:
+https://serendipitystudios.co/Serendipity-Studios-Client-Benchmark-Comparison.html
+
+Ready to talk through your results? Schedule a free 30-minute call:
+https://calendly.com/mike-raab/serendipity-studios
+
+- Serendipity Studios
+mike@serendipitystudios.co`;
+
   const subject = encodeURIComponent(`Benchmark Results: ${centerName || uniName}`);
-  const body = encodeURIComponent(buildResultsText());
+  const body    = encodeURIComponent(bodyText);
+  const mailto  = `mailto:${email}?cc=mike@serendipitystudios.co&subject=${subject}&body=${body}`;
+
+  // Use a hidden anchor click — more reliable than window.location.href
   const a = document.createElement('a');
-  a.href = `mailto:?cc=mike@serendipitystudios.co&subject=${subject}&body=${body}`;
+  a.href = mailto;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
+
+  closeEmailModal();
 }
 </script>
 </body>
