@@ -63,6 +63,9 @@ input[type=text], input[type=email], select {
   outline: none; transition: border-color .2s;
 }
 input[type=text]:focus, input[type=email]:focus, select:focus { border-color: var(--accent); }
+input.input-error, select.input-error { border-color: #c0392b !important; }
+.field-error { display: none; color: #c0392b; font-size: .78rem; margin-top: .3rem; font-weight: 600; }
+.field-error.visible { display: block; }
 
 /* ── PILLAR TABS ──────────────────────────────────────────────── */
 .pillar-tabs { display: none; }
@@ -352,26 +355,32 @@ select.data-input:focus { border-color: var(--accent); }
     <div class="form-group">
       <label>Your Name</label>
       <input type="text" id="contact-name" placeholder="e.g., Jane Smith"/>
+      <span class="field-error" id="err-contact-name">This field is required.</span>
     </div>
     <div class="form-group">
       <label>Your Title</label>
       <input type="text" id="contact-title" placeholder="e.g., Director of Entrepreneurship"/>
+      <span class="field-error" id="err-contact-title">This field is required.</span>
     </div>
     <div class="form-group full">
       <label>Your Email</label>
       <input type="email" id="contact-email" placeholder="e.g., jane@university.edu"/>
+      <span class="field-error" id="err-contact-email">Please enter a valid email address.</span>
     </div>
     <div class="form-group full">
       <label>University Name</label>
       <input type="text" id="uni-name" placeholder="e.g., State University of New York at Albany"/>
+      <span class="field-error" id="err-uni-name">This field is required.</span>
     </div>
     <div class="form-group full">
       <label>Center / Program Name</label>
       <input type="text" id="center-name" placeholder="e.g., Entrepreneurship Center at Albany"/>
+      <span class="field-error" id="err-center-name">This field is required.</span>
     </div>
     <div class="form-group">
       <label>City, State</label>
       <input type="text" id="city-state" placeholder="e.g., Albany, NY"/>
+      <span class="field-error" id="err-city-state">This field is required.</span>
     </div>
     <div class="form-group">
       <label>Public or Private</label>
@@ -380,6 +389,7 @@ select.data-input:focus { border-color: var(--accent); }
         <option>Public</option>
         <option>Private</option>
       </select>
+      <span class="field-error" id="err-pub-priv">Please make a selection.</span>
     </div>
     <div class="form-group">
       <label>University Type</label>
@@ -392,6 +402,7 @@ select.data-input:focus { border-color: var(--accent); }
         <option>Specialized / Professional</option>
         <option>Community College</option>
       </select>
+      <span class="field-error" id="err-univ-type">Please make a selection.</span>
     </div>
     <div class="form-group">
       <label>Undergraduate Enrollment</label>
@@ -403,6 +414,7 @@ select.data-input:focus { border-color: var(--accent); }
         <option value="large">30,000 – 50,000</option>
         <option value="very-large">Over 50,000</option>
       </select>
+      <span class="field-error" id="err-enrollment">Please make a selection.</span>
     </div>
   </div>
 
@@ -425,7 +437,7 @@ select.data-input:focus { border-color: var(--accent); }
   </div>
 
   <div class="btn-row">
-    <button class="btn btn-primary" onclick="goStep(2)">Continue to Data Entry →</button>
+    <button class="btn btn-primary" onclick="validateStep1()">Continue to Data Entry →</button>
   </div>
 </div>
 
@@ -1329,6 +1341,31 @@ function updateTotals() {
 // ══════════════════════════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════════════════════════
+function validateStep1() {
+  const fields = [
+    { id: 'contact-name',  err: 'err-contact-name' },
+    { id: 'contact-title', err: 'err-contact-title' },
+    { id: 'contact-email', err: 'err-contact-email', email: true },
+    { id: 'uni-name',      err: 'err-uni-name' },
+    { id: 'center-name',   err: 'err-center-name' },
+    { id: 'city-state',    err: 'err-city-state' },
+    { id: 'pub-priv',      err: 'err-pub-priv' },
+    { id: 'univ-type',     err: 'err-univ-type' },
+    { id: 'enrollment',    err: 'err-enrollment' },
+  ];
+  let valid = true;
+  fields.forEach(f => {
+    const el  = document.getElementById(f.id);
+    const err = document.getElementById(f.err);
+    const val = el.value.trim();
+    const bad = !val || (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val));
+    el.classList.toggle('input-error', bad);
+    err.classList.toggle('visible', bad);
+    if (bad) valid = false;
+  });
+  if (valid) goStep(2);
+}
+
 function goStep(n) {
   [1,2,3,4].forEach(i => {
     document.getElementById(`step-${i}`).classList.toggle('active', i === n);
@@ -1623,6 +1660,14 @@ function generateDashboard() {
 // ══════════════════════════════════════════════════════════════
 buildCriteriaUI();
 buildResourcesUI();
+
+// Clear validation errors on input
+['contact-name','contact-title','contact-email','uni-name','center-name','city-state','pub-priv','univ-type','enrollment'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => { el.classList.remove('input-error'); document.getElementById('err-' + id).classList.remove('visible'); });
+  el.addEventListener('change', () => { el.classList.remove('input-error'); document.getElementById('err-' + id).classList.remove('visible'); });
+});
 
 // ══════════════════════════════════════════════════════════════
 // EMAIL RESULTS
