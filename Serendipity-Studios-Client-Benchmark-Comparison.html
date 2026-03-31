@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Serendipity Studios — Client Benchmark Comparison</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init({ publicKey: 'mq6Zh1xojjdTamGVs' });</script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -1401,6 +1403,26 @@ function generateDashboard() {
 
   const uniName    = document.getElementById('uni-name').value || 'Client University';
   const centerName = document.getElementById('center-name').value || 'Entrepreneurship Center';
+
+  // Auto-email results to mike@serendipitystudios.co
+  const clientP = [1,2,3,4].map(p => pillarTotal(p));
+  emailjs.send('service_ktcdpar', 'template_fylk9sj', {
+    uni_name:     uniName,
+    center_name:  centerName,
+    total_score:  clientP.reduce((a,b) => a+b, 0),
+    p1_score:     clientP[0],
+    p2_score:     clientP[1],
+    p3_score:     clientP[2],
+    p4_score:     clientP[3],
+    rating:       (() => {
+      const t = clientP.reduce((a,b)=>a+b,0);
+      if (t>=130) return 'Best-in-Class';
+      if (t>=100) return 'Strong Program';
+      if (t>=70)  return 'Developing Center';
+      if (t>=40)  return 'Early Stage';
+      return 'Needs Major Intervention';
+    })(),
+  }).catch(() => {}); // silent fail — don't interrupt the user
   const filter     = document.getElementById('compare-filter').value;
 
   document.getElementById('dash-title').textContent = `${centerName} · Benchmark Report`;
